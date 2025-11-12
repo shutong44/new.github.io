@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>名片联系人列表</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 22px;
+            padding: 35px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);
+            max-width: 920px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        h1 {
+            font-size: 30px;
+            color: #1f2937;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #2193b0;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #197a92;
+        }
+
+        .btn-secondary {
+            background: #eef2f7;
+            color: #4b5563;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e7f0;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 240px;
+            padding: 12px 15px;
+            border: 2px solid #e5e7f2;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #2193b0;
+            box-shadow: 0 0 0 3px rgba(33, 147, 176, 0.1);
+        }
+
+        .contacts-wrapper {
+            border: 1px solid #e5e7f2;
+            border-radius: 18px;
+            overflow: hidden;
+            background: #f8fbff;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #ecf6fb;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 16px 18px;
+            font-size: 14px;
+        }
+
+        th {
+            color: #256072;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        tbody tr {
+            border-top: 1px solid #e5e7f2;
+        }
+
+        tbody tr:hover {
+            background: #e6f7ff;
+        }
+
+        .empty-state {
+            padding: 40px;
+            text-align: center;
+            color: #6b7280;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 500;
+            background: #e9f7fb;
+            color: #21799d;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (max-width: 720px) {
+            .container {
+                padding: 24px;
+            }
+
+            table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.55);
+            z-index: 1500;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 18px;
+            padding: 28px;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+        }
+
+        .modal-title {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #1f2937;
+            text-align: center;
+        }
+
+        .modal-form-group {
+            margin-bottom: 16px;
+        }
+
+        .modal-label {
+            display: block;
+            font-size: 13px;
+            color: #4b5563;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .modal-input, .modal-textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #e5e7f2;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .modal-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .modal-input:focus, .modal-textarea:focus {
+            outline: none;
+            border-color: #2193b0;
+            box-shadow: 0 0 0 3px rgba(33, 147, 176, 0.12);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            background: #e8f3ff;
+            color: #2563eb;
+            margin-left: 6px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>名片联系人列表</h1>
+                <div class="badge" id="contactsCount">0 位联系人</div>
+            </div>
+            <div class="actions">
+                <button class="btn btn-secondary" onclick="goToContact()">返回联系方式</button>
+                <button class="btn btn-secondary" onclick="goToBusinessCard()">继续识别名片</button>
+                <button class="btn btn-primary" onclick="exportContacts()">导出 CSV</button>
+            </div>
+        </div>
+
+        <div class="search-bar">
+            <input type="text" class="search-input" id="searchInput" placeholder="搜索姓名、公司、邮箱或电话..." oninput="renderContacts()">
+            <button class="btn btn-secondary" onclick="clearContacts()">清空全部联系人</button>
+        </div>
+
+        <div class="contacts-wrapper" id="contactsWrapper">
+            <div class="empty-state" id="emptyState">
+                目前还没有保存的名片联系人。请返回名片识别页上传名片后再试。
+            </div>
+            <table id="contactsTable" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>姓名 / 公司</th>
+                        <th>LinkedIn</th>
+                        <th>电话 / WhatsApp</th>
+                        <th>Email</th>
+                        <th>保存时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="contactsBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <div class="modal-title">编辑联系人</div>
+            <div class="modal-form-group">
+                <label class="modal-label">姓名 / 公司</label>
+                <input type="text" class="modal-input" id="edit-name">
+            </div>
+            <div class="modal-form-group">
+                <label class="modal-label">LinkedIn</label>
+                <input type="text" class="modal-input" id="edit-linkedin">
+            </div>
+            <div class="modal-form-group">
+                <label class="modal-label">电话 / WhatsApp</label>
+                <input type="text" class="modal-input" id="edit-whatsapp">
+            </div>
+            <div class="modal-form-group">
+                <label class="modal-label">Email</label>
+                <input type="email" class="modal-input" id="edit-email">
+            </div>
+            <div class="modal-form-group">
+                <label class="modal-label">识别原文<span class="tag">仅自己可见</span></label>
+                <textarea class="modal-textarea" id="edit-raw"></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" style="flex:1;" onclick="closeEditModal()">取消</button>
+                <button class="btn btn-primary" style="flex:1;" onclick="saveEditedContact()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="api-client.js"></script>
+    <script>
+        let contacts = [];
+        let editingContactId = null;
+
+        window.onload = function() {
+            init();
+        };
+
+        async function init() {
+            try {
+                await apiClient.getSession();
+                await loadContacts();
+                renderContacts();
+            } catch (error) {
+                console.warn('Failed to initialise contacts', error);
+            }
+        }
+
+        function goToContact() {
+            window.location.href = 'contact.html';
+        }
+
+        function goToBusinessCard() {
+            window.location.href = 'business-card.html';
+        }
+
+        async function loadContacts() {
+            const response = await apiClient.listContacts();
+            contacts = Array.isArray(response.contacts) ? response.contacts : [];
+        }
+
+        function renderContacts() {
+            const search = document.getElementById('searchInput').value.trim().toLowerCase();
+            const filtered = contacts
+                .filter(contact => {
+                    if (!search) return true;
+                    const source = [
+                        contact.name,
+                        contact.company,
+                        contact.linkedin,
+                        contact.whatsapp,
+                        contact.phone,
+                        contact.email,
+                        contact.rawText,
+                    ]
+                        .join(' ')
+                        .toLowerCase();
+                    return source.includes(search);
+                })
+                .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+            const countEl = document.getElementById('contactsCount');
+            countEl.textContent = `${filtered.length} 位联系人`;
+
+            const emptyState = document.getElementById('emptyState');
+            const table = document.getElementById('contactsTable');
+            const tbody = document.getElementById('contactsBody');
+
+            tbody.innerHTML = '';
+
+            if (!filtered.length) {
+                emptyState.style.display = 'block';
+                table.style.display = 'none';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            table.style.display = 'table';
+
+            filtered.forEach(contact => {
+                const row = document.createElement('tr');
+
+                const cell = (value, fallback = '—') => {
+                    const td = document.createElement('td');
+                    td.textContent = value || fallback;
+                    return td;
+                };
+
+                row.appendChild(cell(contact.name || contact.company || '未命名联系人'));
+
+                const linkedinTd = document.createElement('td');
+                if (contact.linkedin) {
+                    const link = document.createElement('a');
+                    link.href = contact.linkedin.startsWith('http')
+                        ? contact.linkedin
+                        : `https://${contact.linkedin}`;
+                    link.textContent = contact.linkedin.replace(/^https?:\/\//i, '');
+                    link.target = '_blank';
+                    link.rel = 'noopener noreferrer';
+                    link.style.color = '#1b7ea7';
+                    link.style.textDecoration = 'none';
+                    link.style.fontWeight = '500';
+                    linkedinTd.appendChild(link);
+                } else {
+                    linkedinTd.textContent = '—';
+                }
+                row.appendChild(linkedinTd);
+
+                row.appendChild(cell(contact.whatsapp || contact.phone));
+                row.appendChild(cell(contact.email));
+                row.appendChild(
+                    cell(contact.createdAt ? new Date(contact.createdAt).toLocaleString() : '—'),
+                );
+
+                const actionsTd = document.createElement('td');
+                actionsTd.style.display = 'flex';
+                actionsTd.style.gap = '8px';
+
+                const editBtn = document.createElement('button');
+                editBtn.textContent = '编辑';
+                editBtn.className = 'btn btn-secondary';
+                editBtn.style.padding = '6px 12px';
+                editBtn.style.fontSize = '13px';
+                editBtn.style.borderRadius = '8px';
+                editBtn.onclick = () => openEditModal(contact.id);
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = '删除';
+                deleteBtn.className = 'btn btn-secondary';
+                deleteBtn.style.background = '#fee2e2';
+                deleteBtn.style.color = '#b91c1c';
+                deleteBtn.style.padding = '6px 12px';
+                deleteBtn.style.fontSize = '13px';
+                deleteBtn.style.borderRadius = '8px';
+                deleteBtn.onclick = () => deleteContact(contact.id);
+
+                actionsTd.appendChild(editBtn);
+                actionsTd.appendChild(deleteBtn);
+                row.appendChild(actionsTd);
+
+                tbody.appendChild(row);
+            });
+        }
+
+        async function clearContacts() {
+            if (!confirm('确认要清空所有名片联系人吗？此操作无法撤销。')) {
+                return;
+            }
+            try {
+                for (const contact of contacts) {
+                    await apiClient.deleteContact(contact.id);
+                }
+                await loadContacts();
+                renderContacts();
+                showToast('✓ 已清空联系人');
+            } catch (error) {
+                console.error(error);
+                showToast(`⚠️ 清空失败：${error.message}`);
+            }
+        }
+
+        async function exportContacts() {
+            await loadContacts();
+            if (!contacts.length) {
+                showToast('⚠️ 没有可导出的联系人');
+                return;
+            }
+
+            const headers = ['姓名/公司', 'LinkedIn', '电话/WhatsApp', 'Email', '保存时间'];
+            const rows = contacts.map(contact => [
+                contact.name || contact.company || '',
+                contact.linkedin || '',
+                contact.whatsapp || contact.phone || '',
+                contact.email || '',
+                contact.createdAt ? new Date(contact.createdAt).toLocaleString() : '',
+            ]);
+
+            const csvContent = [headers, ...rows]
+                .map(row =>
+                    row.map(value => `"${(value || '').replace(/"/g, '""')}"`).join(','),
+                )
+                .join('\r\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `名片联系人_${Date.now()}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            showToast('✓ CSV 导出完成');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function openEditModal(id) {
+            const contact = contacts.find(item => item.id === id);
+            if (!contact) {
+                showToast('⚠️ 未找到该联系人');
+                return;
+            }
+
+            editingContactId = id;
+            document.getElementById('edit-name').value = contact.name || '';
+            document.getElementById('edit-linkedin').value = contact.linkedin || '';
+            document.getElementById('edit-whatsapp').value =
+                contact.whatsapp || contact.phone || '';
+            document.getElementById('edit-email').value = contact.email || '';
+            document.getElementById('edit-raw').value = contact.rawText || '';
+
+            document.getElementById('editModal').classList.add('show');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('show');
+            editingContactId = null;
+        }
+
+        function saveEditedContact() {
+            if (!editingContactId) {
+                showToast('⚠️ 未找到需要保存的联系人');
+                return;
+            }
+
+            const updated = {
+                name: document.getElementById('edit-name').value.trim(),
+                linkedin: document.getElementById('edit-linkedin').value.trim(),
+                whatsapp: document.getElementById('edit-whatsapp').value.trim(),
+                email: document.getElementById('edit-email').value.trim(),
+                rawText: document.getElementById('edit-raw').value.trim(),
+            };
+
+            apiClient
+                .updateContact(editingContactId, updated)
+                .then(({ contact }) => {
+                    if (contact) {
+                        const index = contacts.findIndex(item => item.id === editingContactId);
+                        if (index >= 0) {
+                            contacts[index] = contact;
+                            renderContacts();
+                        }
+                    }
+                    closeEditModal();
+                    showToast('✓ 联系人已更新');
+                })
+                .catch(error => {
+                    console.error(error);
+                    showToast(`⚠️ 更新失败：${error.message}`);
+                });
+        }
+
+        function deleteContact(id) {
+            if (!confirm('确定要删除该联系人吗？')) {
+                return;
+            }
+            apiClient
+                .deleteContact(id)
+                .then(() => {
+                    contacts = contacts.filter(item => item.id !== id);
+                    renderContacts();
+                    showToast('✓ 已删除联系人');
+                })
+                .catch(error => {
+                    console.error(error);
+                    showToast(`⚠️ 删除失败：${error.message}`);
+                });
+        }
+
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('editModal');
+            if (event.target === modal) {
+                closeEditModal();
+            }
+        });
+    </script>
+</body>
+</html>
+

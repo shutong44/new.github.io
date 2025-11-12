@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>联系方式</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .edit-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            display: block;
+            margin: 0 auto 20px;
+            transition: all 0.3s ease;
+        }
+
+        .edit-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .edit-btn:active {
+            transform: translateY(0);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            font-size: 22px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            margin-bottom: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .contact-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-color: #667eea;
+        }
+
+        .contact-item:active {
+            transform: translateY(-1px);
+        }
+
+        .icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .linkedin-icon {
+            background: #0077b5;
+            color: white;
+        }
+
+        .whatsapp-icon {
+            background: #25d366;
+            color: white;
+        }
+
+        .email-icon {
+            background: #ea4335;
+            color: white;
+        }
+
+        .contact-info {
+            flex: 1;
+        }
+
+        .contact-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 3px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .contact-value {
+            font-size: 16px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .contact-item {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 我的联系方式</h1>
+        
+        <button class="edit-btn" onclick="openEditModal()">✏️ 编辑联系方式</button>
+        <button class="edit-btn" style="margin-top: -10px;" onclick="openBusinessCardPage()">📇 名片识别导入</button>
+        <button class="edit-btn" style="margin-top: -10px;" onclick="openContactsModal()">📒 名片联系人列表</button>
+        
+        <div class="contact-item" onclick="openLinkedIn()">
+            <div class="icon linkedin-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                </svg>
+            </div>
+            <div class="contact-info">
+                <div class="contact-label">LinkedIn</div>
+                <div class="contact-value" id="linkedin-display">linkedin.com/in/shutong666</div>
+            </div>
+        </div>
+
+        <div class="contact-item" onclick="openWhatsApp()">
+            <div class="icon whatsapp-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                </svg>
+            </div>
+            <div class="contact-info">
+                <div class="contact-label">WhatsApp</div>
+                <div class="contact-value" id="whatsapp-display">+44 90000</div>
+            </div>
+        </div>
+
+        <div class="contact-item" onclick="openEmail()">
+            <div class="icon email-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                </svg>
+            </div>
+            <div class="contact-info">
+                <div class="contact-label">Email</div>
+                <div class="contact-value" id="email-display">shutong@dxc</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <div class="modal-header">编辑联系方式</div>
+            
+            <div class="form-group">
+                <label class="form-label">LinkedIn ID 或完整链接</label>
+                <input type="text" class="form-input" id="linkedin-input" placeholder="例如: shutong666 或 https://www.linkedin.com/in/shutong666">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">WhatsApp</label>
+                <input type="text" class="form-input" id="whatsapp-input" placeholder="例如: +44 90000">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-input" id="email-input" placeholder="例如: shutong@dxc">
+            </div>
+
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeEditModal()">取消</button>
+                <button class="btn btn-primary" onclick="saveContactInfo()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <div class="modal" id="contactsModal">
+        <div class="modal-content" style="max-height: 80vh; overflow-y: auto;">
+            <div class="modal-header">名片联系人</div>
+            <div id="contactsList" style="display: flex; flex-direction: column; gap: 12px;"></div>
+            <div style="margin-top: 20px; display: flex; gap: 10px;">
+                <button class="btn btn-secondary" style="background: #f0f0f0; color: #666;" onclick="closeContactsModal()">关闭</button>
+                <button class="btn btn-primary" style="background: #667eea; color: white;" onclick="openContactsPage()">查看完整列表</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="api-client.js"></script>
+    <script>
+        let contactInfo = {
+            linkedin: '',
+            whatsapp: '',
+            email: ''
+        };
+        let contactsCache = [];
+
+        window.onload = function() {
+            init();
+        };
+
+        async function init() {
+            try {
+                const session = await apiClient.getSession();
+                if (session?.profile) {
+                    contactInfo = {
+                        linkedin: session.profile.linkedin || '',
+                        whatsapp: session.profile.whatsapp || '',
+                        email: session.profile.email || ''
+                    };
+                }
+                updateDisplay();
+                await renderContactsList();
+            } catch (error) {
+                console.warn('Failed to initialise profile', error);
+            }
+        }
+
+        function formatLinkedInDisplay(value) {
+            if (!value) return '';
+            const trimmed = value.trim();
+            if (/^https?:\/\//i.test(trimmed)) {
+                return trimmed.replace(/^https?:\/\//i, '');
+            }
+            if (/^www\./i.test(trimmed)) {
+                return trimmed;
+            }
+            return `linkedin.com/in/${trimmed.replace(/^linkedin\.com\/in\//i, '').replace(/^www\.linkedin\.com\/in\//i, '')}`;
+        }
+
+        function updateDisplay() {
+            document.getElementById('linkedin-display').textContent = formatLinkedInDisplay(contactInfo.linkedin);
+            document.getElementById('whatsapp-display').textContent = contactInfo.whatsapp;
+            document.getElementById('email-display').textContent = contactInfo.email;
+        }
+
+        function openEditModal() {
+            document.getElementById('linkedin-input').value = contactInfo.linkedin;
+            document.getElementById('whatsapp-input').value = contactInfo.whatsapp;
+            document.getElementById('email-input').value = contactInfo.email;
+            document.getElementById('editModal').classList.add('show');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('show');
+        }
+
+        function saveContactInfo() {
+            const linkedin = document.getElementById('linkedin-input').value.trim();
+            const whatsapp = document.getElementById('whatsapp-input').value.trim();
+            const email = document.getElementById('email-input').value.trim();
+
+            if (!linkedin && !whatsapp && !email) {
+                showToast('⚠️ 请至少填写一项联系方式');
+                return;
+            }
+
+            const payload = { linkedin, whatsapp, email };
+
+            apiClient.updateProfile(payload)
+                .then(({ profile }) => {
+                    contactInfo = {
+                        linkedin: profile?.linkedin || '',
+                        whatsapp: profile?.whatsapp || '',
+                        email: profile?.email || ''
+                    };
+                    updateDisplay();
+                    closeEditModal();
+                    showToast('✓ 联系方式已保存');
+                })
+                .catch(error => {
+                    console.error(error);
+                    showToast(`⚠️ 保存失败：${error.message}`);
+                });
+        }
+
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('editModal');
+            if (event.target === modal) {
+                closeEditModal();
+            }
+        });
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function normalizeLinkedInValue(value) {
+            if (/^https?:\/\//i.test(value)) {
+                return value;
+            }
+            if (/^www\./i.test(value)) {
+                return `https://${value}`;
+            }
+            if (!value) {
+                return '';
+            }
+            const cleaned = value.replace(/^linkedin\.com\/in\//i, '').replace(/^www\.linkedin\.com\/in\//i, '');
+            return `https://www.linkedin.com/in/${cleaned}`;
+        }
+
+        function openLinkedIn() {
+            const linkedinValue = normalizeLinkedInValue(contactInfo.linkedin.trim());
+            if (!linkedinValue) {
+                showToast('⚠️ 请先填写 LinkedIn 信息');
+                return;
+            }
+            window.open(linkedinValue, '_blank');
+            showToast('✓ 正在打开 LinkedIn');
+        }
+
+        function openWhatsApp() {
+            const phoneNumber = contactInfo.whatsapp.replace(/[^0-9]/g, '');
+            if (!phoneNumber) {
+                showToast('⚠️ 请先填写 WhatsApp 号码');
+                return;
+            }
+            const whatsappUrl = `https://wa.me/${phoneNumber}`;
+            window.open(whatsappUrl, '_blank');
+            showToast('✓ 正在打开 WhatsApp');
+        }
+
+        function openEmail() {
+            const email = contactInfo.email.trim();
+            if (!email) {
+                showToast('⚠️ 请先填写邮箱');
+                return;
+            }
+            window.location.href = `mailto:${email}`;
+            showToast('✓ 正在打开邮件应用');
+        }
+
+        function openBusinessCardPage() {
+            window.location.href = 'business-card.html';
+        }
+
+        function getSavedContacts() {
+            return contactsCache;
+        }
+
+        async function renderContactsList() {
+            const container = document.getElementById('contactsList');
+            if (!container) return;
+            container.innerHTML = '';
+
+            try {
+                const { contacts } = await apiClient.listContacts();
+                contactsCache = Array.isArray(contacts) ? contacts : [];
+            } catch (error) {
+                console.error('Failed to load contacts', error);
+                showToast('⚠️ 无法加载联系人列表，请稍后再试');
+                contactsCache = [];
+            }
+
+            const contacts = getSavedContacts();
+            if (!contacts.length) {
+                const empty = document.createElement('div');
+                empty.style.color = '#666';
+                empty.style.textAlign = 'center';
+                empty.style.padding = '10px 0';
+                empty.textContent = '暂无名片联系人，请先通过名片识别导入。';
+                container.appendChild(empty);
+                return;
+            }
+
+            contacts
+                .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
+                .slice(0, 5)
+                .forEach(contact => {
+                    const card = document.createElement('div');
+                    card.style.border = '1px solid #e5e7f2';
+                    card.style.borderRadius = '10px';
+                    card.style.padding = '12px 14px';
+                    card.style.background = '#f8f9ff';
+                    card.style.display = 'flex';
+                    card.style.flexDirection = 'column';
+                    card.style.gap = '6px';
+
+                    const title = document.createElement('div');
+                    title.style.fontWeight = '600';
+                    title.style.color = '#333';
+                    title.textContent = contact.name || '未命名联系人';
+
+                    const detail = (label, value) => {
+                        if (!value) return null;
+                        const line = document.createElement('div');
+                        line.style.fontSize = '13px';
+                        line.style.color = '#555';
+                        line.textContent = `${label}: ${value}`;
+                        return line;
+                    };
+
+                    card.appendChild(title);
+                    const linkedinLine = detail('LinkedIn', contact.linkedin);
+                    const phoneLine = detail('电话', contact.whatsapp || contact.phone);
+                    const emailLine = detail('邮箱', contact.email);
+
+                    [linkedinLine, phoneLine, emailLine].forEach(line => {
+                        if (line) card.appendChild(line);
+                    });
+
+                    const timeLine = detail('保存时间', contact.createdAt ? new Date(contact.createdAt).toLocaleString() : '');
+                    if (timeLine) {
+                        timeLine.style.color = '#888';
+                        card.appendChild(timeLine);
+                    }
+
+                    container.appendChild(card);
+                });
+
+            if (contacts.length > 5) {
+                const more = document.createElement('div');
+                more.style.textAlign = 'center';
+                more.style.fontSize = '13px';
+                more.style.color = '#667eea';
+                more.textContent = `还有 ${contacts.length - 5} 位联系人，点击“查看完整列表”查看更多`;
+                container.appendChild(more);
+            }
+        }
+
+        function openContactsModal() {
+            renderContactsList().finally(() => {
+                document.getElementById('contactsModal').classList.add('show');
+            });
+        }
+
+        function closeContactsModal() {
+            document.getElementById('contactsModal').classList.remove('show');
+        }
+
+        function openContactsPage() {
+            window.location.href = 'contact-list.html';
+        }
+
+        document.addEventListener('click', function(event) {
+            const contactsModal = document.getElementById('contactsModal');
+            if (event.target === contactsModal) {
+                closeContactsModal();
+            }
+        });
+    </script>
+</body>
+</html>
+
