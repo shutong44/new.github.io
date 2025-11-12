@@ -44,6 +44,38 @@
             font-size: 15px;
         }
 
+        .auth-banner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 14px 18px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            background: #fff2f2;
+            border: 1px solid rgba(255, 122, 122, 0.2);
+        }
+
+        .auth-banner.logged-in {
+            background: #f2fff5;
+            border-color: rgba(82, 196, 120, 0.3);
+        }
+
+        .auth-banner.logged-in .auth-text {
+            color: #3a7f52;
+        }
+
+        .auth-banner.logged-out .auth-text {
+            color: #d46b08;
+        }
+
+        .auth-text {
+            font-size: 14px;
+            line-height: 1.4;
+            color: #555;
+            flex: 1;
+        }
+
         .upload-area {
             border: 2px dashed #ff7a7a;
             border-radius: 16px;
@@ -170,6 +202,23 @@
             background: #e4e6ed;
         }
 
+        .btn-google {
+            background: #ffffff;
+            color: #ff4d4f;
+            border: 1px solid rgba(255, 77, 79, 0.4);
+            flex: 0 0 auto;
+            padding: 10px 16px;
+        }
+
+        .btn-google:hover {
+            background: #ffeded;
+        }
+
+        .btn-google:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
         .results {
             background: #fff2f2;
             border-radius: 12px;
@@ -208,6 +257,11 @@
     <div class="container">
         <h1>名片识别导入</h1>
         <p class="subtitle">上传名片照片，自动识别常见联系方式并一键导入</p>
+
+        <div class="auth-banner" id="authBanner">
+            <div class="auth-text" id="authText">正在检查登录状态...</div>
+            <button type="button" class="btn btn-google" id="loginButton" disabled>使用 Google 登录</button>
+        </div>
 
         <div class="upload-area" id="uploadArea">
             <div class="upload-icon">📷</div>
@@ -257,11 +311,60 @@
     <script src="api-client.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script>
+        const DEFAULT_REMOTE_BASE = 'https://cloudflare-worker-google-oauth.wangshutong774.workers.dev';
+        const pageOrigin = window.location.origin;
+        const API_BASE =
+            window.__API_BASE__ ||
+            (pageOrigin && !pageOrigin.startsWith('file:') ? pageOrigin : DEFAULT_REMOTE_BASE);
+        let latestLoginUrl = undefined;
+
+        const authBanner = document.getElementById('authBanner');
+        const authText = document.getElementById('authText');
+        const loginButton = document.getElementById('loginButton');
+
+        loginButton.addEventListener('click', () => {
+            apiClient.login(latestLoginUrl);
+        });
+
         async function ensureAuthenticated() {
+            authBanner.classList.remove('logged-in', 'logged-out');
+            authText.textContent = '正在检查登录状态...';
+            loginButton.disabled = true;
+
             try {
-                await apiClient.getSession();
+                const response = await fetch(`${API_BASE}/api/session`, {
+                    credentials: 'include',
+                });
+                let data = null;
+                try {
+                    data = await response.json();
+                } catch (err) {
+                    data = null;
+                }
+
+                if (response.ok && data) {
+                    latestLoginUrl = undefined;
+                    authBanner.classList.add('logged-in');
+                    const displayName = data.user?.name || data.user?.email || '已登录';
+                    authText.textContent = `已登录：${displayName}`;
+                    loginButton.textContent = '切换账号';
+                    loginButton.disabled = false;
+                } else if (response.status === 401) {
+                    latestLoginUrl = data?.loginUrl;
+                    authBanner.classList.add('logged-out');
+                    authText.textContent = '未登录：请先使用 Google 登录以保存联系人';
+                    loginButton.textContent = '使用 Google 登录';
+                    loginButton.disabled = false;
+                } else {
+                    throw new Error(data?.error || response.statusText);
+                }
             } catch (err) {
-                console.warn('Session check', err);
+                console.error('Session check failed', err);
+                latestLoginUrl = undefined;
+                authBanner.classList.add('logged-out');
+                authText.textContent = '无法获取登录状态，请稍后重试';
+                loginButton.textContent = '重新尝试登录';
+                loginButton.disabled = false;
             }
         }
 

@@ -1,7 +1,16 @@
 (() => {
-  const API_BASE =
-    window.__API_BASE__ ||
-    (typeof window !== 'undefined' ? window.location.origin : '');
+  const DEFAULT_REMOTE_BASE =
+    'https://cloudflare-worker-google-oauth.wangshutong774.workers.dev';
+
+  let origin =
+    typeof window !== 'undefined' && window.location
+      ? window.location.origin
+      : '';
+  if (!origin || origin.startsWith('file:')) {
+    origin = '';
+  }
+
+  const API_BASE = window.__API_BASE__ || origin || DEFAULT_REMOTE_BASE;
 
   function ensureAbsolute(path) {
     if (path.startsWith('http')) return path;
@@ -80,6 +89,9 @@
     },
     async logout() {
       return request('/logout', { method: 'POST', body: {} });
+    },
+    login(loginUrl) {
+      redirectToLogin(loginUrl);
     },
   };
 
