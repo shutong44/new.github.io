@@ -353,9 +353,28 @@
         };
         let contactsCache = [];
 
-        window.onload = function() {
-            init();
-        };
+        window.addEventListener('DOMContentLoaded', () => {
+            checkLoginStatus().then(init).catch(error => {
+                console.error('Initialisation halted', error);
+            });
+        });
+
+        async function checkLoginStatus() {
+            try {
+                const session = await apiClient.getSession();
+                if (!session?.authenticated) {
+                    apiClient.login();
+                    throw new Error('Redirecting to login');
+                }
+            } catch (error) {
+                if (error?.message === 'Redirecting to login') {
+                    throw error;
+                }
+                console.warn('Login check failed, redirecting', error);
+                apiClient.login();
+                throw error;
+            }
+        }
 
         async function init() {
             try {
