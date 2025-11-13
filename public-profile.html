@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>名片资料</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #5335cf 0%, #8f6ed5 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 36px 32px;
+            box-shadow: 0 30px 80px rgba(15, 10, 60, 0.35);
+            backdrop-filter: blur(12px);
+        }
+
+        .avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 26px;
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.75);
+            margin-bottom: 16px;
+        }
+
+        .visibility-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            padding: 6px 16px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.4px;
+            margin: 0 auto 20px;
+            display: none;
+        }
+
+        .visibility-pill[data-variant="approval_required"] {
+            background: rgba(255, 193, 7, 0.3);
+        }
+
+        .visibility-pill[data-variant="private"] {
+            background: rgba(244, 67, 54, 0.3);
+        }
+
+        .bio {
+            text-align: center;
+            font-size: 15px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.85);
+            margin-bottom: 24px;
+            white-space: pre-wrap;
+        }
+
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn-primary {
+            background: #ff7a7a;
+            color: #fff;
+            box-shadow: 0 10px 35px rgba(255, 122, 122, 0.35);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 40px rgba(255, 122, 122, 0.45);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+
+        .contact-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.12);
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        .contact-item:hover {
+            background: rgba(255, 255, 255, 0.18);
+            transform: translateY(-1px);
+        }
+
+        .contact-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .contact-text {
+            flex: 1;
+        }
+
+        .contact-label {
+            font-size: 12px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 4px;
+        }
+
+        .contact-value {
+            font-size: 15px;
+            color: #fff;
+            word-break: break-all;
+        }
+
+        .notice {
+            text-align: center;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.75);
+            margin-top: 12px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translate(-50%, 100%);
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 999px;
+            font-size: 14px;
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            z-index: 2000;
+        }
+
+        .toast.show {
+            transform: translate(-50%, 0);
+            opacity: 1;
+        }
+
+        .empty-state {
+            text-align: center;
+            font-size: 16px;
+            padding: 60px 40px;
+            color: rgba(255, 255, 255, 0.85);
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(15, 10, 60, 0.25);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card" id="profile-card">
+            <div class="avatar" id="profile-avatar"></div>
+            <h1 id="profile-name">正在加载...</h1>
+            <div class="title" id="profile-title"></div>
+            <div class="visibility-pill" id="profile-visibility">公开模式</div>
+            <div class="bio" id="profile-bio"></div>
+
+            <div class="actions">
+                <button class="btn btn-primary" onclick="saveContact()" id="save-button">
+                    保存到我的联系人
+                </button>
+                <button class="btn btn-secondary" onclick="copyShareLink()">
+                    复制分享链接
+                </button>
+            </div>
+
+            <div class="contact-list">
+                <div class="contact-item" id="linkedin-item" onclick="openLinkedIn()" style="display: none;">
+                    <div class="contact-icon">in</div>
+                    <div class="contact-text">
+                        <div class="contact-label">LinkedIn</div>
+                        <div class="contact-value" id="linkedin-value"></div>
+                    </div>
+                </div>
+                <div class="contact-item" id="whatsapp-item" onclick="openWhatsApp()" style="display: none;">
+                    <div class="contact-icon">💬</div>
+                    <div class="contact-text">
+                        <div class="contact-label">WhatsApp</div>
+                        <div class="contact-value" id="whatsapp-value"></div>
+                    </div>
+                </div>
+                <div class="contact-item" id="email-item" onclick="openEmail()" style="display: none;">
+                    <div class="contact-icon">✉️</div>
+                    <div class="contact-text">
+                        <div class="contact-label">Email</div>
+                        <div class="contact-value" id="email-value"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="notice" id="approval-notice" style="display: none;">
+                此联系人需要对方审批后才能查看完整信息。
+            </div>
+        </div>
+
+        <div class="empty-state" id="empty-state" style="display: none;">
+            暂未找到该名片信息，可能链接已失效或被设为私密。
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="api-client.js"></script>
+    <script>
+        const DEFAULT_REMOTE_BASE = 'https://cloudflare-worker-google-oauth.wangshutong774.workers.dev';
+        const PAGE_ORIGIN = window.location.origin;
+        const PUBLIC_BASE =
+            window.__PUBLIC_BASE__ ||
+            (PAGE_ORIGIN && PAGE_ORIGIN.startsWith('http')
+                ? PAGE_ORIGIN
+                : DEFAULT_REMOTE_BASE);
+
+        let profileData = null;
+        let shareUrl = '';
+
+        window.addEventListener('DOMContentLoaded', () => {
+            init().catch((error) => {
+                console.error('Failed to load profile', error);
+                showEmptyState('加载失败，请稍后重试。');
+            });
+        });
+
+        async function init() {
+            const slug = getSlugFromPath();
+            if (!slug) {
+                showEmptyState('链接不正确，请确认 NFC 名片是否写入了有效地址。');
+                return;
+            }
+
+            let data = null;
+            try {
+                data = await apiClient.getPublicProfile(slug);
+            } catch (error) {
+                if (error?.message === 'Profile is private') {
+                    showEmptyState('此联系人为私密模式，无法查看。');
+                    return;
+                }
+                if (error?.message === 'Profile not found' || error?.message === 'Source profile not found') {
+                    showEmptyState('暂未找到该名片信息。');
+                    return;
+                }
+                throw error;
+            }
+            if (!data?.profile) {
+                showEmptyState('暂未找到该名片信息。');
+                return;
+            }
+
+            profileData = data.profile;
+            shareUrl = `${PUBLIC_BASE.replace(/\/$/, '')}/p/${encodeURIComponent(
+                profileData.slug,
+            )}`;
+            renderProfile();
+        }
+
+        function getSlugFromPath() {
+            const parts = window.location.pathname.split('/');
+            return (parts.pop() || parts.pop() || '').trim();
+        }
+
+        function renderProfile() {
+            if (!profileData) return;
+            document.getElementById('profile-name').textContent =
+                profileData.displayName || '未命名联系人';
+            const titleEl = document.getElementById('profile-title');
+            titleEl.textContent = profileData.title || '';
+            titleEl.style.display = profileData.title ? 'block' : 'none';
+
+            const visibilityEl = document.getElementById('profile-visibility');
+            const visibilityLabels = {
+                public: '公开模式',
+                approval_required: '需审批',
+                private: '仅本人',
+            };
+            const variant = profileData.visibility || 'public';
+            visibilityEl.dataset.variant = variant;
+            visibilityEl.textContent = visibilityLabels[variant] || '公开模式';
+            visibilityEl.style.display = variant ? 'inline-flex' : 'none';
+
+            const avatarEl = document.getElementById('profile-avatar');
+            avatarEl.innerHTML = '';
+            if (profileData.avatarUrl) {
+                const img = document.createElement('img');
+                img.src = profileData.avatarUrl;
+                img.alt = profileData.displayName || '头像';
+                avatarEl.appendChild(img);
+            } else {
+                const initial =
+                    (profileData.displayName || '用户').trim().charAt(0) || '名';
+                avatarEl.textContent = initial;
+            }
+
+            const bioEl = document.getElementById('profile-bio');
+            bioEl.textContent = profileData.bio || '';
+            bioEl.style.display = profileData.bio ? 'block' : 'none';
+
+            toggleContactItem(
+                'linkedin-item',
+                'linkedin-value',
+                formatLinkedInDisplay(profileData.linkedin),
+            );
+            toggleContactItem(
+                'whatsapp-item',
+                'whatsapp-value',
+                profileData.whatsapp,
+            );
+            toggleContactItem('email-item', 'email-value', profileData.email);
+
+            const noticeEl = document.getElementById('approval-notice');
+            if (profileData.requiresApproval) {
+                noticeEl.textContent = '此联系人设置了审批模式，保存后需等待对方确认。';
+                noticeEl.style.display = 'block';
+            } else if (profileData.visibility === 'private') {
+                noticeEl.textContent = '此联系人仅对本人可见。';
+                noticeEl.style.display = 'block';
+                document.getElementById('save-button').disabled = true;
+                document.getElementById('save-button').textContent = '已设为私密';
+            } else {
+                noticeEl.style.display = 'none';
+            }
+        }
+
+        function toggleContactItem(itemId, valueId, value) {
+            const itemEl = document.getElementById(itemId);
+            const valueEl = document.getElementById(valueId);
+            if (value) {
+                valueEl.textContent = value;
+                itemEl.style.display = 'flex';
+            } else {
+                itemEl.style.display = 'none';
+            }
+        }
+
+        function formatLinkedInDisplay(value) {
+            if (!value) return '';
+            const trimmed = value.trim();
+            if (/^https?:\/\//i.test(trimmed)) {
+                return trimmed.replace(/^https?:\/\//i, '');
+            }
+            if (/^www\./i.test(trimmed)) {
+                return trimmed;
+            }
+            return `linkedin.com/in/${trimmed.replace(/^linkedin\.com\/in\//i, '')}`;
+        }
+
+        async function saveContact() {
+            if (!profileData) return;
+            if (profileData.visibility === 'private') {
+                showToast('⚠️ 此联系人为私密，无法保存');
+                return;
+            }
+
+            try {
+                const payload = {
+                    name: profileData.displayName || '未命名联系人',
+                    linkedin: profileData.linkedin || '',
+                    whatsapp: profileData.whatsapp || '',
+                    email: profileData.email || '',
+                    rawText: profileData.bio || '',
+                    sourceProfileId: profileData.slug,
+                };
+                const response = await apiClient.createContact(payload);
+                if (response?.message) {
+                    showToast(response.message);
+                } else {
+                    showToast('✓ 已保存到我的联系人');
+                }
+            } catch (error) {
+                console.error(error);
+                showToast(`⚠️ 保存失败：${error.message || '未知错误'}`);
+            }
+        }
+
+        async function copyShareLink() {
+            if (!shareUrl) {
+                showToast('⚠️ 无法复制链接');
+                return;
+            }
+            try {
+                await navigator.clipboard.writeText(shareUrl);
+                showToast('✓ 链接已复制');
+            } catch (err) {
+                const temp = document.createElement('textarea');
+                temp.style.position = 'fixed';
+                temp.style.opacity = '0';
+                temp.value = shareUrl;
+                document.body.appendChild(temp);
+                temp.focus();
+                temp.select();
+                document.execCommand('copy');
+                document.body.removeChild(temp);
+                showToast('✓ 链接已复制');
+            }
+        }
+
+        function openLinkedIn() {
+            if (!profileData?.linkedin) {
+                showToast('⚠️ 未提供 LinkedIn 信息');
+                return;
+            }
+            let url = profileData.linkedin.trim();
+            if (!/^https?:\/\//i.test(url)) {
+                url = `https://${url.replace(/^\/\//, '')}`;
+            }
+            window.open(url, '_blank');
+        }
+
+        function openWhatsApp() {
+            if (!profileData?.whatsapp) {
+                showToast('⚠️ 未提供 WhatsApp 号码');
+                return;
+            }
+            const normalized = profileData.whatsapp.replace(/[^0-9]/g, '');
+            if (!normalized) {
+                showToast('⚠️ 未提供有效的 WhatsApp 号码');
+                return;
+            }
+            window.open(`https://wa.me/${normalized}`, '_blank');
+        }
+
+        function openEmail() {
+            if (!profileData?.email) {
+                showToast('⚠️ 未提供邮箱');
+                return;
+            }
+            window.location.href = `mailto:${profileData.email}`;
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2800);
+        }
+
+        function showEmptyState(message) {
+            document.getElementById('profile-card').style.display = 'none';
+            const emptyState = document.getElementById('empty-state');
+            emptyState.textContent = message;
+            emptyState.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
+
+

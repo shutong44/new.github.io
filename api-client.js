@@ -87,6 +87,9 @@
         method: 'DELETE',
       });
     },
+    async getPublicProfile(slug) {
+      return request(`/api/public-profile/${encodeURIComponent(slug)}`);
+    },
     async logout() {
       return request('/logout', { method: 'POST', body: {} });
     },

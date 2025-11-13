@@ -61,6 +61,93 @@
             transform: translateY(0);
         }
 
+        .profile-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .profile-name {
+            font-size: 22px;
+            font-weight: 700;
+            color: #2d2a44;
+        }
+
+        .profile-title {
+            font-size: 14px;
+            color: #777;
+            margin-top: 4px;
+        }
+
+        .share-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 14px 18px;
+            border-radius: 12px;
+            background: #f6f7ff;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            margin-bottom: 24px;
+        }
+
+        .share-info {
+            flex: 1;
+        }
+
+        .share-label {
+            font-size: 12px;
+            color: #667eea;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+
+        .share-url {
+            font-size: 14px;
+            color: #333;
+            margin-top: 4px;
+            word-break: break-all;
+        }
+
+        .share-btn {
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: none;
+            background: #667eea;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .share-btn:hover {
+            background: #5568d3;
+            transform: translateY(-1px);
+        }
+
+        .visibility-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(102, 126, 234, 0.12);
+            color: #5568d3;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            margin: 12px auto 0;
+        }
+
+        .visibility-pill[data-variant="private"] {
+            background: rgba(220, 76, 100, 0.12);
+            color: #d64566;
+        }
+
+        .visibility-pill[data-variant="approval_required"] {
+            background: rgba(255, 193, 7, 0.15);
+            color: #c37b00;
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -86,6 +173,39 @@
             max-width: 400px;
             width: 100%;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-content textarea {
+            width: 100%;
+            min-height: 80px;
+            resize: vertical;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .modal-content textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .modal-content select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .modal-content select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
         .modal-header {
@@ -263,6 +383,20 @@
 <body>
     <div class="container">
         <h1>📱 我的联系方式</h1>
+
+        <div class="profile-header">
+            <div class="profile-name" id="profile-name-display">未命名</div>
+            <div class="profile-title" id="profile-title-display"></div>
+            <div class="visibility-pill" id="visibility-pill" data-variant="public">公开模式</div>
+        </div>
+
+        <div class="share-card">
+            <div class="share-info">
+                <div class="share-label">分享链接</div>
+                <div class="share-url" id="share-url">生成中...</div>
+            </div>
+            <button class="share-btn" onclick="copyShareLink()">复制</button>
+        </div>
         
         <button class="edit-btn" onclick="openEditModal()">✏️ 编辑联系方式</button>
         <button class="edit-btn" style="margin-top: -10px;" onclick="openBusinessCardPage()">📇 名片识别导入</button>
@@ -308,7 +442,32 @@
     <div class="modal" id="editModal">
         <div class="modal-content">
             <div class="modal-header">编辑联系方式</div>
-            
+
+            <div class="form-group">
+                <label class="form-label">展示名称</label>
+                <input type="text" class="form-input" id="display-name-input" placeholder="例如: 王书桐">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">职位 / 头衔</label>
+                <input type="text" class="form-input" id="title-input" placeholder="例如: DXC 产品经理">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">分享链接别名（slug）</label>
+                <input type="text" class="form-input" id="slug-input" placeholder="例如: shutong">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">头像 URL（可选）</label>
+                <input type="url" class="form-input" id="avatar-input" placeholder="例如: https://example.com/avatar.png">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">个人简介</label>
+                <textarea id="bio-input" placeholder="一句话介绍自己~"></textarea>
+            </div>
+
             <div class="form-group">
                 <label class="form-label">LinkedIn ID 或完整链接</label>
                 <input type="text" class="form-input" id="linkedin-input" placeholder="例如: shutong666 或 https://www.linkedin.com/in/shutong666">
@@ -322,6 +481,15 @@
             <div class="form-group">
                 <label class="form-label">Email</label>
                 <input type="email" class="form-input" id="email-input" placeholder="例如: shutong@dxc">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">可见性</label>
+                <select id="visibility-select">
+                    <option value="public">公开（默认）</option>
+                    <option value="approval_required">需要审批</option>
+                    <option value="private">仅本人</option>
+                </select>
             </div>
 
             <div class="modal-buttons">
@@ -346,18 +514,45 @@
 
     <script src="api-client.js"></script>
     <script>
-        let contactInfo = {
+        const DEFAULT_REMOTE_BASE = 'https://cloudflare-worker-google-oauth.wangshutong774.workers.dev';
+        const PAGE_ORIGIN = window.location.origin;
+        const PUBLIC_BASE =
+            window.__PUBLIC_BASE__ ||
+            (PAGE_ORIGIN && PAGE_ORIGIN.startsWith('http')
+                ? PAGE_ORIGIN
+                : DEFAULT_REMOTE_BASE);
+
+        let currentUser = null;
+        let profileState = {
+            userId: '',
+            slug: '',
+            displayName: '',
+            title: '',
             linkedin: '',
             whatsapp: '',
-            email: ''
+            email: '',
+            avatarUrl: '',
+            bio: '',
+            visibility: 'public',
         };
         let contactsCache = [];
+        let shareUrl = '';
 
         window.addEventListener('DOMContentLoaded', () => {
             checkLoginStatus().then(init).catch(error => {
                 console.error('Initialisation halted', error);
             });
         });
+
+        function sanitizeSlug(value) {
+            if (typeof value !== 'string') return '';
+            return value
+                .trim()
+                .toLowerCase()
+                .replace(/[^a-z0-9-]/g, '-')
+                .replace(/-+/g, '-')
+                .replace(/^-|-$/g, '');
+        }
 
         async function checkLoginStatus() {
             try {
@@ -379,14 +574,20 @@
         async function init() {
             try {
                 const session = await apiClient.getSession();
-                if (session?.profile) {
-                    contactInfo = {
-                        linkedin: session.profile.linkedin || '',
-                        whatsapp: session.profile.whatsapp || '',
-                        email: session.profile.email || ''
-                    };
+                currentUser = session?.user || currentUser;
+                let profile = session?.profile || null;
+
+                try {
+                    const profileResp = await apiClient.getProfile();
+                    if (profileResp?.profile) {
+                        profile = profileResp.profile;
+                    }
+                } catch (err) {
+                    console.warn('Failed to fetch profile via API', err);
                 }
-                updateDisplay();
+
+                hydrateProfile(profile);
+                updateProfileDisplay();
                 await renderContactsList();
             } catch (error) {
                 console.warn('Failed to initialise profile', error);
@@ -405,16 +606,94 @@
             return `linkedin.com/in/${trimmed.replace(/^linkedin\.com\/in\//i, '').replace(/^www\.linkedin\.com\/in\//i, '')}`;
         }
 
-        function updateDisplay() {
-            document.getElementById('linkedin-display').textContent = formatLinkedInDisplay(contactInfo.linkedin);
-            document.getElementById('whatsapp-display').textContent = contactInfo.whatsapp;
-            document.getElementById('email-display').textContent = contactInfo.email;
+        function hydrateProfile(profile) {
+            const valueOr = (value, fallback = '') =>
+                typeof value === 'string' && value.trim().length > 0
+                    ? value.trim()
+                    : fallback;
+
+            const incoming = profile || {};
+
+            profileState = {
+                ...profileState,
+                userId:
+                    incoming.userId ||
+                    incoming.user_id ||
+                    profileState.userId ||
+                    currentUser?.id ||
+                    '',
+                slug:
+                    sanitizeSlug(incoming.slug || incoming.SLUG || '') ||
+                    profileState.slug ||
+                    '',
+                displayName:
+                    valueOr(
+                        incoming.displayName || incoming.display_name,
+                        profileState.displayName,
+                    ) ||
+                    valueOr(currentUser?.name, '未命名'),
+                title: valueOr(incoming.title, profileState.title || ''),
+                linkedin: valueOr(incoming.linkedin, profileState.linkedin || ''),
+                whatsapp: valueOr(incoming.whatsapp, profileState.whatsapp || ''),
+                email: valueOr(incoming.email, profileState.email || ''),
+                avatarUrl: valueOr(incoming.avatarUrl || incoming.avatar_url || '', ''),
+                bio: valueOr(incoming.bio, profileState.bio || ''),
+                visibility:
+                    incoming.visibility || profileState.visibility || 'public',
+            };
+        }
+
+        function updateProfileDisplay() {
+            const linkedInEl = document.getElementById('linkedin-display');
+            const whatsappEl = document.getElementById('whatsapp-display');
+            const emailEl = document.getElementById('email-display');
+            linkedInEl.textContent = formatLinkedInDisplay(profileState.linkedin);
+            whatsappEl.textContent = profileState.whatsapp || '';
+            emailEl.textContent = profileState.email || '';
+
+            const nameEl = document.getElementById('profile-name-display');
+            const titleEl = document.getElementById('profile-title-display');
+            nameEl.textContent = profileState.displayName || '未命名';
+            titleEl.textContent = profileState.title || '';
+            titleEl.style.display = profileState.title ? 'block' : 'none';
+
+            const pill = document.getElementById('visibility-pill');
+            const visibilityLabels = {
+                public: '公开模式',
+                approval_required: '需审批',
+                private: '仅本人',
+            };
+            const variant = profileState.visibility || 'public';
+            pill.dataset.variant = variant;
+            pill.textContent = visibilityLabels[variant] || '公开模式';
+            pill.style.display = variant ? 'inline-flex' : 'none';
+
+            const shareEl = document.getElementById('share-url');
+            if (profileState.slug) {
+                const base = PUBLIC_BASE.replace(/\/$/, '');
+                shareUrl = `${base}/p/${encodeURIComponent(profileState.slug)}`;
+                shareEl.textContent = shareUrl;
+            } else {
+                shareUrl = '';
+                shareEl.textContent = '请先完善资料并保存生成链接';
+            }
         }
 
         function openEditModal() {
-            document.getElementById('linkedin-input').value = contactInfo.linkedin;
-            document.getElementById('whatsapp-input').value = contactInfo.whatsapp;
-            document.getElementById('email-input').value = contactInfo.email;
+            document.getElementById('display-name-input').value =
+                profileState.displayName || '';
+            document.getElementById('title-input').value = profileState.title || '';
+            document.getElementById('slug-input').value = profileState.slug || '';
+            document.getElementById('avatar-input').value =
+                profileState.avatarUrl || '';
+            document.getElementById('bio-input').value = profileState.bio || '';
+            document.getElementById('linkedin-input').value =
+                profileState.linkedin || '';
+            document.getElementById('whatsapp-input').value =
+                profileState.whatsapp || '';
+            document.getElementById('email-input').value = profileState.email || '';
+            document.getElementById('visibility-select').value =
+                profileState.visibility || 'public';
             document.getElementById('editModal').classList.add('show');
         }
 
@@ -423,31 +702,73 @@
         }
 
         function saveContactInfo() {
+            const displayName = document
+                .getElementById('display-name-input')
+                .value.trim();
+            const title = document.getElementById('title-input').value.trim();
+            const rawSlug = document.getElementById('slug-input').value.trim();
+            const slug = sanitizeSlug(rawSlug);
+            const avatarUrl = document.getElementById('avatar-input').value.trim();
+            const bio = document.getElementById('bio-input').value.trim();
             const linkedin = document.getElementById('linkedin-input').value.trim();
             const whatsapp = document.getElementById('whatsapp-input').value.trim();
             const email = document.getElementById('email-input').value.trim();
+            const visibilityRaw = document.getElementById('visibility-select').value;
+            const allowedVisibility = new Set(['public', 'approval_required', 'private']);
+            const visibility = allowedVisibility.has(visibilityRaw)
+                ? visibilityRaw
+                : 'public';
 
-            if (!linkedin && !whatsapp && !email) {
-                showToast('⚠️ 请至少填写一项联系方式');
+            if (rawSlug && (!slug || slug.length < 3)) {
+                showToast('⚠️ 链接别名仅支持字母、数字和短横线，且至少 3 个字符');
                 return;
             }
 
-            const payload = { linkedin, whatsapp, email };
+            if (
+                !displayName &&
+                !title &&
+                !linkedin &&
+                !whatsapp &&
+                !email &&
+                !bio &&
+                !avatarUrl
+            ) {
+                showToast('⚠️ 请至少填写一项信息再保存');
+                return;
+            }
 
-            apiClient.updateProfile(payload)
+            const payload = {
+                displayName,
+                title,
+                slug: slug && slug.length >= 3 ? slug : undefined,
+                avatarUrl,
+                bio,
+                linkedin,
+                whatsapp,
+                email,
+                visibility,
+            };
+
+            apiClient
+                .updateProfile(payload)
                 .then(({ profile }) => {
-                    contactInfo = {
-                        linkedin: profile?.linkedin || '',
-                        whatsapp: profile?.whatsapp || '',
-                        email: profile?.email || ''
-                    };
-                    updateDisplay();
+                    const merged = profile ?? { ...profileState, ...payload };
+                    if (!merged.slug && profileState.slug) {
+                        merged.slug = profileState.slug;
+                    }
+                    hydrateProfile(merged);
+                    updateProfileDisplay();
                     closeEditModal();
                     showToast('✓ 联系方式已保存');
                 })
-                .catch(error => {
+                .catch((error) => {
                     console.error(error);
-                    showToast(`⚠️ 保存失败：${error.message}`);
+                    const message = (error && error.message) || '保存失败';
+                    if (message.toLowerCase().includes('slug')) {
+                        showToast('⚠️ 链接别名已被占用，请换一个');
+                    } else {
+                        showToast(`⚠️ 保存失败：${message}`);
+                    }
                 });
         }
 
@@ -468,6 +789,33 @@
             }, 3000);
         }
 
+        async function copyShareLink() {
+            if (!shareUrl) {
+                showToast('⚠️ 请先保存信息生成链接');
+                return;
+            }
+            try {
+                await navigator.clipboard.writeText(shareUrl);
+                showToast('✓ 链接已复制');
+            } catch (err) {
+                try {
+                    const temp = document.createElement('textarea');
+                    temp.style.position = 'fixed';
+                    temp.style.opacity = '0';
+                    temp.value = shareUrl;
+                    document.body.appendChild(temp);
+                    temp.focus();
+                    temp.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(temp);
+                    showToast('✓ 链接已复制');
+                } catch (fallbackErr) {
+                    console.error(fallbackErr);
+                    showToast('⚠️ 无法复制链接，请手动复制');
+                }
+            }
+        }
+
         function normalizeLinkedInValue(value) {
             if (/^https?:\/\//i.test(value)) {
                 return value;
@@ -483,7 +831,12 @@
         }
 
         function openLinkedIn() {
-            const linkedinValue = normalizeLinkedInValue(contactInfo.linkedin.trim());
+            const raw = (profileState.linkedin || '').trim();
+            if (!raw) {
+                showToast('⚠️ 请先填写 LinkedIn 信息');
+                return;
+            }
+            const linkedinValue = normalizeLinkedInValue(raw);
             if (!linkedinValue) {
                 showToast('⚠️ 请先填写 LinkedIn 信息');
                 return;
@@ -493,7 +846,7 @@
         }
 
         function openWhatsApp() {
-            const phoneNumber = contactInfo.whatsapp.replace(/[^0-9]/g, '');
+            const phoneNumber = (profileState.whatsapp || '').replace(/[^0-9]/g, '');
             if (!phoneNumber) {
                 showToast('⚠️ 请先填写 WhatsApp 号码');
                 return;
@@ -504,7 +857,7 @@
         }
 
         function openEmail() {
-            const email = contactInfo.email.trim();
+            const email = (profileState.email || '').trim();
             if (!email) {
                 showToast('⚠️ 请先填写邮箱');
                 return;
@@ -581,6 +934,22 @@
                     [linkedinLine, phoneLine, emailLine].forEach(line => {
                         if (line) card.appendChild(line);
                     });
+
+                    if (contact.approvalStatus && contact.approvalStatus !== 'approved') {
+                        const statusLine = detail(
+                            '状态',
+                            contact.approvalStatus === 'pending'
+                                ? '待审批'
+                                : contact.approvalStatus,
+                        );
+                        if (statusLine) {
+                            statusLine.style.color =
+                                contact.approvalStatus === 'pending'
+                                    ? '#c37b00'
+                                    : '#555';
+                            card.appendChild(statusLine);
+                        }
+                    }
 
                     const timeLine = detail('保存时间', contact.createdAt ? new Date(contact.createdAt).toLocaleString() : '');
                     if (timeLine) {
