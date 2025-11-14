@@ -728,7 +728,7 @@
         <span class="selected-count" id="selectedCount">0 selected</span>
         <div class="conference-input-group">
             <input type="text" id="conferenceInput" placeholder="Enter conference name (e.g., A Conference, B Conference)">
-            <button type="button" class="btn btn-primary" onclick="applyConferenceToSelected()">Apply Conference</button>
+            <button type="button" class="btn btn-primary" onclick="applyConferenceToSelected()">Go to Conference Page</button>
         </div>
         <button type="button" class="btn btn-secondary" onclick="clearSelectedConference()">Clear Conference</button>
         <button type="button" class="btn btn-secondary" onclick="exitSelectionMode()">Cancel</button>
@@ -1110,6 +1110,224 @@
             }
             const searchUrl = `https://www.linkedin.com/search/results/companies/?keywords=${encodeURIComponent(companyName)}`;
             window.open(searchUrl, '_blank');
+        }
+
+        // Selection Mode Functions
+        function toggleSelectionMode() {
+            selectionMode = !selectionMode;
+            selectedContacts.clear();
+            aiLinkedInMode = false;
+            
+            const btn = document.getElementById('toggleSelectionBtn');
+            const grid = document.getElementById('contactsGrid');
+            
+            if (selectionMode) {
+                btn.textContent = '✗ Cancel';
+                grid.classList.add('selection-mode');
+                document.getElementById('batchActionsBar').classList.remove('show');
+                document.getElementById('aiLinkedInBar').style.display = 'none';
+                renderContacts();
+            } else {
+                btn.textContent = '✓ Select';
+                grid.classList.remove('selection-mode');
+                document.getElementById('batchActionsBar').classList.remove('show');
+                renderContacts();
+            }
+        }
+
+        function toggleContactSelection(contactId, checkbox) {
+            if (checkbox.checked) {
+                selectedContacts.add(contactId);
+            } else {
+                selectedContacts.delete(contactId);
+            }
+            updateBatchActionsBar();
+        }
+
+        function updateBatchActionsBar() {
+            const count = selectedContacts.size;
+            document.getElementById('selectedCount').textContent = `${count} selected`;
+            
+            if (count > 0 && selectionMode) {
+                document.getElementById('batchActionsBar').classList.add('show');
+            } else {
+                document.getElementById('batchActionsBar').classList.remove('show');
+            }
+        }
+
+        function goToConferencePage() {
+            if (selectedContacts.size === 0) {
+                showToast('Please select at least one contact first');
+                return;
+            }
+            
+            const conferenceName = document.getElementById('conferenceInput').value.trim();
+            if (!conferenceName) {
+                showToast('Please enter a conference name');
+                return;
+            }
+            
+            // Store selected contacts and conference name in sessionStorage
+            sessionStorage.setItem('selectedContacts', JSON.stringify(Array.from(selectedContacts)));
+            sessionStorage.setItem('conferenceName', conferenceName);
+            
+            // Navigate to conference page
+            window.location.href = `conference.html?name=${encodeURIComponent(conferenceName)}`;
+        }
+
+        async function applyConferenceToSelected() {
+            const conference = document.getElementById('conferenceInput').value.trim();
+            if (!conference) {
+                showToast('Please enter a conference name');
+                return;
+            }
+            
+            if (selectedContacts.size === 0) {
+                showToast('Please select at least one contact');
+                return;
+            }
+            
+            // Navigate to conference page with selected contacts
+            goToConferencePage();
+        }
+
+        async function clearSelectedConference() {
+            if (selectedContacts.size === 0) {
+                showToast('Please select at least one contact');
+                return;
+            }
+            
+            if (!confirm(`Clear conference from ${selectedContacts.size} contact(s)?`)) {
+                return;
+            }
+            
+            try {
+                showToast(`Clearing conference from ${selectedContacts.size} contact(s)...`);
+                
+                const promises = Array.from(selectedContacts).map(contactId => 
+                    apiClient.updateContact(contactId, { conference: null, meetingStatus: null })
+                );
+                
+                await Promise.all(promises);
+                
+                await loadContacts();
+                renderContacts();
+                selectedContacts.clear();
+                updateBatchActionsBar();
+                showToast('Conference cleared');
+            } catch (error) {
+                console.error(error);
+                showToast(`Failed to clear conference: ${error.message}`);
+            }
+        }
+
+        function exitSelectionMode() {
+            selectionMode = false;
+            selectedContacts.clear();
+            toggleSelectionMode();
+        }
+
+        // AI LinkedIn Functions
+        function enableAILinkedInMode() {
+            aiLinkedInMode = true;
+            selectionMode = false;
+            selectedContacts.clear();
+            
+            // Find all contacts missing LinkedIn
+            contactsMissingLinkedIn = contacts.filter(c => 
+                !c.linkedin || c.linkedin.trim() === ''
+            );
+            
+            if (contactsMissingLinkedIn.length === 0) {
+                showToast('All contacts already have LinkedIn URLs!');
+                aiLinkedInMode = false;
+                return;
+            }
+            
+            // Show AI LinkedIn bar
+            document.getElementById('aiLinkedInBar').style.display = 'flex';
+            document.getElementById('missingLinkedInCount').textContent = contactsMissingLinkedIn.length;
+            document.getElementById('batchActionsBar').classList.remove('show');
+            
+            // Reset selection mode UI
+            document.getElementById('toggleSelectionBtn').textContent = '✓ Select';
+            document.getElementById('contactsGrid').classList.remove('selection-mode');
+            
+            renderContacts();
+        }
+
+        async function processAILinkedIn() {
+            if (contactsMissingLinkedIn.length === 0) return;
+            
+            const progressBar = document.getElementById('aiLinkedInProgress');
+            const progressFill = document.getElementById('aiLinkedInProgressFill');
+            const statusText = document.getElementById('aiLinkedInStatus');
+            
+            progressBar.style.display = 'flex';
+            
+            let successCount = 0;
+            let failCount = 0;
+            
+            for (let i = 0; i < contactsMissingLinkedIn.length; i++) {
+                const contact = contactsMissingLinkedIn[i];
+                
+                try {
+                    // Update progress
+                    const progress = ((i + 1) / contactsMissingLinkedIn.length) * 100;
+                    progressFill.style.width = `${progress}%`;
+                    statusText.textContent = `${i + 1} / ${contactsMissingLinkedIn.length}`;
+                    
+                    // Extract name from contact
+                    const { name, company } = parseNameFields(contact.name);
+                    const contactName = name || contact.name || '';
+                    
+                    // Call Worker API to find LinkedIn URL
+                    const result = await apiClient.findLinkedInByAI({
+                        contactId: contact.id,
+                        name: contactName,
+                        company: contact.company,
+                        email: contact.email,
+                        rawText: contact.rawText
+                    });
+                    
+                    if (result && result.linkedinUrl) {
+                        // Update contact
+                        await apiClient.updateContact(contact.id, {
+                            linkedin: result.linkedinUrl
+                        });
+                        successCount++;
+                    } else {
+                        failCount++;
+                    }
+                    
+                } catch (error) {
+                    console.error(`Failed to find LinkedIn for ${contact.name}:`, error);
+                    failCount++;
+                }
+                
+                // Avoid rate limiting, add delay between requests
+                if (i < contactsMissingLinkedIn.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+            }
+            
+            // Complete processing
+            progressBar.style.display = 'none';
+            await loadContacts();
+            renderContacts();
+            
+            showToast(`AI LinkedIn processing complete! Found ${successCount} LinkedIn URLs, ${failCount} failed.`);
+            
+            // Close AI LinkedIn mode
+            cancelAILinkedIn();
+        }
+
+        function cancelAILinkedIn() {
+            aiLinkedInMode = false;
+            contactsMissingLinkedIn = [];
+            document.getElementById('aiLinkedInBar').style.display = 'none';
+            document.getElementById('aiLinkedInProgress').style.display = 'none';
+            renderContacts();
         }
 
         function openDetailModal(id) {

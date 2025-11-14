@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Conference</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f8fafc;
+            min-height: 100vh;
+            padding: 0;
+            color: #1a202c;
+        }
+
+        .header-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .badge {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #667eea;
+        }
+
+        .btn-primary:hover {
+            background: #f7fafc;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .conference-info {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .conference-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #1a202c;
+        }
+
+        .stats {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            margin-top: 16px;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a202c;
+        }
+
+        .contacts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .contacts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .contact-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s;
+            border: 1px solid #e2e8f0;
+            position: relative;
+        }
+
+        .contact-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .contact-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .contact-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a202c;
+            margin-bottom: 4px;
+        }
+
+        .contact-company {
+            font-size: 14px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .status-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+
+        .status-btn {
+            padding: 6px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+            color: #475569;
+        }
+
+        .status-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .status-btn.pending {
+            background: #fef3c7;
+            color: #92400e;
+            border-color: #fbbf24;
+        }
+
+        .status-btn.pending.active {
+            background: #f59e0b;
+            color: white;
+            border-color: #f59e0b;
+        }
+
+        .status-btn.talked {
+            background: #d1fae5;
+            color: #065f46;
+            border-color: #10b981;
+        }
+
+        .status-btn.talked.active {
+            background: #10b981;
+            color: white;
+            border-color: #10b981;
+        }
+
+        .status-btn.skipped {
+            background: #fee2e2;
+            color: #991b1b;
+            border-color: #ef4444;
+        }
+
+        .status-btn.skipped.active {
+            background: #ef4444;
+            color: white;
+            border-color: #ef4444;
+        }
+
+        .contact-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #475569;
+        }
+
+        .contact-item a {
+            color: #2563eb;
+            text-decoration: none;
+            word-break: break-all;
+        }
+
+        .contact-item a:hover {
+            text-decoration: underline;
+        }
+
+        .contact-icon {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #64748b;
+            background: white;
+            border-radius: 12px;
+        }
+
+        .empty-state h2 {
+            font-size: 20px;
+            margin-bottom: 8px;
+            color: #1a202c;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #1a202c;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 10000;
+            opacity: 0;
+            transform: translateX(400px);
+            transition: all 0.3s ease;
+            max-width: 300px;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .purpose-section {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .purpose-label {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .purpose-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 13px;
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .purpose-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-section">
+        <div class="header-content">
+            <div>
+                <h1>📅 Conference</h1>
+                <div class="badge" id="conferenceNameBadge">Loading...</div>
+            </div>
+            <div class="actions">
+                <button class="btn btn-secondary" onclick="goToContactList()">Back to Contacts</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="conference-info">
+            <div class="conference-title" id="conferenceTitle">Conference</div>
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-label">Total</div>
+                    <div class="stat-value" id="totalCount">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Pending</div>
+                    <div class="stat-value" id="pendingCount">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Talked</div>
+                    <div class="stat-value" id="talkedCount">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Skipped</div>
+                    <div class="stat-value" id="skippedCount">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="contactsGrid" class="contacts-grid"></div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="api-client.js"></script>
+    <script>
+        let conferenceName = '';
+        let conferenceContacts = [];
+
+        async function init() {
+            try {
+                await apiClient.getSession();
+                
+                // Get conference name from URL or sessionStorage
+                const urlParams = new URLSearchParams(window.location.search);
+                conferenceName = urlParams.get('name') || sessionStorage.getItem('conferenceName') || '';
+                
+                if (!conferenceName) {
+                    showToast('No conference name provided');
+                    setTimeout(() => goToContactList(), 2000);
+                    return;
+                }
+
+                // Update UI
+                document.getElementById('conferenceTitle').textContent = conferenceName;
+                document.getElementById('conferenceNameBadge').textContent = conferenceName;
+
+                // Get selected contacts from sessionStorage (if coming from contact-list)
+                const selectedContactsStr = sessionStorage.getItem('selectedContacts');
+                if (selectedContactsStr) {
+                    const selectedContactIds = JSON.parse(selectedContactsStr);
+                    await addContactsToConference(selectedContactIds);
+                    sessionStorage.removeItem('selectedContacts');
+                    sessionStorage.removeItem('conferenceName');
+                }
+
+                await loadConferenceContacts();
+            } catch (error) {
+                console.error(error);
+                showToast('Failed to initialize: ' + error.message);
+            }
+        }
+
+        async function loadConferenceContacts() {
+            try {
+                const response = await apiClient.listContacts();
+                const allContacts = Array.isArray(response.contacts) ? response.contacts : [];
+                
+                // Filter contacts for this conference
+                conferenceContacts = allContacts.filter(c => c.conference === conferenceName);
+                
+                renderContacts();
+                updateStats();
+            } catch (error) {
+                console.error(error);
+                showToast('Failed to load contacts: ' + error.message);
+            }
+        }
+
+        async function addContactsToConference(contactIds) {
+            try {
+                showToast(`Adding ${contactIds.length} contact(s) to conference...`);
+                
+                const promises = contactIds.map(contactId => 
+                    apiClient.updateContact(contactId, { 
+                        conference: conferenceName,
+                        meetingStatus: 'pending'
+                    })
+                );
+                
+                await Promise.all(promises);
+                showToast(`Added ${contactIds.length} contact(s) to conference`);
+            } catch (error) {
+                console.error(error);
+                showToast('Failed to add contacts: ' + error.message);
+            }
+        }
+
+        function renderContacts() {
+            const grid = document.getElementById('contactsGrid');
+            grid.innerHTML = '';
+
+            if (conferenceContacts.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <h2>No contacts yet</h2>
+                        <p>Add contacts from the contact list to this conference</p>
+                    </div>
+                `;
+                return;
+            }
+
+            conferenceContacts.forEach(contact => {
+                const card = document.createElement('div');
+                card.className = 'contact-card';
+                
+                const { name, company } = parseNameFields(contact.name);
+                const parsedName = name || contact.name || 'Unnamed Contact';
+                const parsedCompany = contact.company || company || '—';
+
+                const meetingStatus = contact.meetingStatus || 'pending';
+
+                card.innerHTML = `
+                    <div class="contact-header">
+                        <div>
+                            <div class="contact-name">${parsedName}</div>
+                            <div class="contact-company">${parsedCompany}</div>
+                        </div>
+                    </div>
+
+                    <div class="contact-meta">
+                        ${contact.linkedin ? `
+                        <div class="contact-item">
+                            <span class="contact-icon">💼</span>
+                            <a href="${contact.linkedin.startsWith('http') ? contact.linkedin : 'https://' + contact.linkedin}" target="_blank">
+                                ${contact.linkedin.replace(/^https?:\/\//i, '')}
+                            </a>
+                        </div>
+                        ` : ''}
+                        ${contact.email ? `
+                        <div class="contact-item">
+                            <span class="contact-icon">📧</span>
+                            <a href="mailto:${contact.email}">${contact.email}</a>
+                        </div>
+                        ` : ''}
+                        ${contact.whatsapp || contact.phone ? `
+                        <div class="contact-item">
+                            <span class="contact-icon">📱</span>
+                            <a href="https://wa.me/${(contact.whatsapp || contact.phone).replace(/[^0-9]/g, '')}" target="_blank">
+                                ${contact.whatsapp || contact.phone}
+                            </a>
+                        </div>
+                        ` : ''}
+                        ${contact.companyBusiness ? `
+                        <div class="contact-item">
+                            <span class="contact-icon">🏢</span>
+                            <span>${contact.companyBusiness}</span>
+                        </div>
+                        ` : ''}
+                    </div>
+
+                    <div class="status-buttons">
+                        <button class="status-btn pending ${meetingStatus === 'pending' ? 'active' : ''}" 
+                                onclick="updateMeetingStatus('${contact.id}', 'pending')">
+                            ⏳ Pending
+                        </button>
+                        <button class="status-btn talked ${meetingStatus === 'talked' ? 'active' : ''}" 
+                                onclick="updateMeetingStatus('${contact.id}', 'talked')">
+                            ✓ Talked
+                        </button>
+                        <button class="status-btn skipped ${meetingStatus === 'skipped' ? 'active' : ''}" 
+                                onclick="updateMeetingStatus('${contact.id}', 'skipped')">
+                            ✗ Skipped
+                        </button>
+                    </div>
+
+                    <div class="purpose-section">
+                        <div class="purpose-label">Purpose / Notes</div>
+                        <textarea class="purpose-input" 
+                                  id="purpose-${contact.id}" 
+                                  placeholder="Why do you want to talk to this person? Add your purpose or notes here..."
+                                  onblur="savePurpose('${contact.id}')">${contact.note || ''}</textarea>
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        async function updateMeetingStatus(contactId, status) {
+            try {
+                await apiClient.updateContact(contactId, { meetingStatus: status });
+                
+                // Update local data
+                const contact = conferenceContacts.find(c => c.id === contactId);
+                if (contact) {
+                    contact.meetingStatus = status;
+                }
+                
+                renderContacts();
+                updateStats();
+                showToast('Status updated');
+            } catch (error) {
+                console.error(error);
+                showToast('Failed to update status: ' + error.message);
+            }
+        }
+
+        async function savePurpose(contactId) {
+            const purposeInput = document.getElementById(`purpose-${contactId}`);
+            const purpose = purposeInput.value.trim();
+            
+            try {
+                await apiClient.updateContact(contactId, { note: purpose });
+                showToast('Purpose saved');
+            } catch (error) {
+                console.error(error);
+                showToast('Failed to save purpose: ' + error.message);
+            }
+        }
+
+        function updateStats() {
+            const total = conferenceContacts.length;
+            const pending = conferenceContacts.filter(c => !c.meetingStatus || c.meetingStatus === 'pending').length;
+            const talked = conferenceContacts.filter(c => c.meetingStatus === 'talked').length;
+            const skipped = conferenceContacts.filter(c => c.meetingStatus === 'skipped').length;
+
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('pendingCount').textContent = pending;
+            document.getElementById('talkedCount').textContent = talked;
+            document.getElementById('skippedCount').textContent = skipped;
+        }
+
+        function parseNameFields(name) {
+            if (!name) return { name: null, company: null, title: null };
+            const parts = name.split(' / ').map(p => p.trim()).filter(p => p);
+            let parsedName = parts[0] || null;
+            let parsedCompany = null;
+            let parsedTitle = null;
+            
+            if (parts.length >= 2) {
+                const companyKeywords = ['company', 'corp', 'ltd', 'inc', 'co.', '公司', '有限公司'];
+                const isCompany = companyKeywords.some(keyword => 
+                    parts[1].toLowerCase().includes(keyword.toLowerCase())
+                );
+                
+                if (isCompany) {
+                    parsedCompany = parts[1];
+                    if (parts.length >= 3) parsedTitle = parts[2];
+                } else {
+                    parsedTitle = parts[1];
+                    if (parts.length >= 3) parsedCompany = parts[2];
+                }
+            }
+            
+            return { name: parsedName, company: parsedCompany, title: parsedTitle };
+        }
+
+        function goToContactList() {
+            window.location.href = 'contact-list.html';
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
+
