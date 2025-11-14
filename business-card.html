@@ -3,9 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
     <title>名片识别导入</title>
     <style>
         * {
@@ -321,8 +318,8 @@
 
         <div class="upload-area" id="uploadArea">
             <div class="upload-icon">📷</div>
-            <div class="upload-text">点击或拖拽名片照片到此处（最多3张）</div>
-            <div class="upload-hint">支持 JPG / PNG / HEIC，可一次选择多张或分批上传，最多3张</div>
+            <div class="upload-text">点击或拖拽名片照片到此处</div>
+            <div class="upload-hint">支持 JPG / PNG / HEIC，最多3张，建议清晰正面照片</div>
             <input type="file" id="fileInput" accept="image/*" multiple style="display:none;">
         </div>
 
@@ -470,11 +467,7 @@
 
         fileInput.addEventListener('change', (event) => {
             if (event.target.files && event.target.files.length > 0) {
-                const files = Array.from(event.target.files);
-                handleFiles(files);
-                // 重置文件输入，允许再次选择（累积到3张）
-                // 注意：如果已经达到3张，下次选择时会提示
-                event.target.value = '';
+                handleFiles(Array.from(event.target.files));
             }
         });
 
@@ -486,45 +479,21 @@
                 return;
             }
 
-            // 检查是否已满
-            if (selectedFiles.length >= MAX_IMAGES) {
-                showToast(`⚠️ 已达到最大数量${MAX_IMAGES}张，请先删除部分图片`);
-                return;
-            }
-
             const remainingSlots = MAX_IMAGES - selectedFiles.length;
-            
-            // 如果选择的文件数量超过剩余槽位，只取前面的
-            const filesToProcess = imageFiles.slice(0, remainingSlots);
-            
             if (imageFiles.length > remainingSlots) {
-                showToast(`⚠️ 最多只能上传${MAX_IMAGES}张图片，已选择${selectedFiles.length}张，将只添加前${remainingSlots}张`);
+                showToast(`⚠️ 最多只能上传${MAX_IMAGES}张图片，已选择${selectedFiles.length}张`);
+                imageFiles.splice(remainingSlots);
             }
 
-            let hasNewFiles = false;
-            
-            // 检查重复文件并添加新文件
-            filesToProcess.forEach(file => {
-                // 检查是否已存在同名且同大小的文件
-                const isDuplicate = selectedFiles.some(existing => 
-                    existing.name === file.name && existing.size === file.size
-                );
-                
-                if (!isDuplicate && selectedFiles.length < MAX_IMAGES) {
+            imageFiles.forEach(file => {
+                if (selectedFiles.length < MAX_IMAGES) {
                     selectedFiles.push(file);
                     addImagePreview(file);
-                    hasNewFiles = true;
-                } else if (isDuplicate) {
-                    showToast(`⚠️ 文件 "${file.name}" 已存在，跳过`);
                 }
             });
 
             updateImagesCount();
-            
-            // 只在有新文件添加时才重新识别
-            if (hasNewFiles) {
-                runOCROnAllImages();
-            }
+            runOCROnAllImages();
         }
 
         function addImagePreview(file) {
@@ -704,38 +673,6 @@
             window.location.href = 'contact.html';
         }
 
-        async function uploadImagesToR2(files) {
-            const imageUrls = [];
-            
-            for (const file of files) {
-                try {
-                    const formData = new FormData();
-                    formData.append('file', file);
-
-                    const response = await fetch(`${API_BASE}/api/upload-image`, {
-                        method: 'POST',
-                        credentials: 'include',
-                        body: formData,
-                    });
-
-                    if (!response.ok) {
-                        const error = await response.json().catch(() => ({ error: 'Upload failed' }));
-                        throw new Error(error.error || 'Upload failed');
-                    }
-
-                    const result = await response.json();
-                    if (result.success && result.url) {
-                        imageUrls.push(result.url);
-                    }
-                } catch (error) {
-                    console.error(`Failed to upload image ${file.name}:`, error);
-                    // Continue with other images even if one fails
-                }
-            }
-            
-            return imageUrls;
-        }
-
         async function saveContact() {
             const name = document.getElementById('name-input').value.trim();
             const company = document.getElementById('company-input').value.trim();
@@ -753,22 +690,6 @@
             }
 
             try {
-                // 上传图片到 R2
-                let imageUrls = [];
-                if (selectedFiles.length > 0) {
-                    statusText.textContent = '正在上传图片...';
-                    statusBox.classList.add('show');
-                    try {
-                        imageUrls = await uploadImagesToR2(selectedFiles);
-                        if (imageUrls.length > 0) {
-                            showToast(`✓ 已上传 ${imageUrls.length} 张图片`);
-                        }
-                    } catch (error) {
-                        console.error('Image upload error:', error);
-                        showToast('⚠️ 图片上传失败，但联系人信息将继续保存');
-                    }
-                }
-
                 // 构建rawText，包含所有识别到的信息
                 const rawTextParts = [];
                 if (name) rawTextParts.push(`姓名: ${name}`);
@@ -787,15 +708,11 @@
                     linkedin,
                     whatsapp,
                     email,
-                    rawText: rawText,
-                    imageUrls: imageUrls.length > 0 ? imageUrls : undefined
+                    rawText: rawText
                 });
-                
-                statusBox.classList.remove('show');
                 showToast('✓ 已保存到通讯录，可在联系人列表查看');
             } catch (error) {
                 console.error(error);
-                statusBox.classList.remove('show');
                 showToast(`⚠️ 保存失败：${error.message}`);
             }
         }
