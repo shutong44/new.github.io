@@ -747,6 +747,7 @@
         <span class="selected-count" id="selectedCount">0 selected</span>
         <div class="conference-input-group">
             <input type="text" id="conferenceInput" placeholder="Enter conference name (e.g., A Conference, B Conference)">
+            <button type="button" class="btn btn-primary" onclick="saveConferenceToSelected()">Save</button>
             <button type="button" class="btn btn-primary" onclick="applyConferenceToSelected()">Go to Conference Page</button>
         </div>
         <button type="button" class="btn btn-secondary" onclick="clearSelectedConference()">Clear Conference</button>
@@ -1263,6 +1264,38 @@
             
             // Navigate to conference page
             window.location.href = `conference.html?name=${encodeURIComponent(conferenceName)}`;
+        }
+
+        async function saveConferenceToSelected() {
+            if (selectedContacts.size === 0) {
+                showToast('Please select at least one contact first');
+                return;
+            }
+
+            const conferenceName = document.getElementById('conferenceInput').value.trim();
+            if (!conferenceName) {
+                showToast('Please enter a conference name');
+                return;
+            }
+
+            try {
+                showToast(`Saving ${selectedContacts.size} contact(s) to "${conferenceName}"...`);
+                
+                // Update contacts with conference name
+                const promises = Array.from(selectedContacts).map(contactId => 
+                    apiClient.updateContact(contactId, { conference: conferenceName })
+                );
+                
+                await Promise.all(promises);
+                
+                showToast(`Successfully saved ${selectedContacts.size} contact(s) to "${conferenceName}"`);
+                
+                // Refresh contacts list to show updated conference tags
+                renderContacts();
+            } catch (error) {
+                console.error(error);
+                showToast('Failed to save conference: ' + error.message);
+            }
         }
 
         async function applyConferenceToSelected() {
