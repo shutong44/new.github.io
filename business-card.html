@@ -815,15 +815,25 @@
                 }
                 const rawText = rawTextParts.join('\n');
 
-                await apiClient.createContact({
-                    name: fullName || name || company || title,
-                    linkedin,
-                    whatsapp,
-                    email,
-                    company: company || undefined,
-                    rawText: rawText,
-                    imageUrls: imageUrls // Always send array, even if empty
+                // Ensure all fields are properly formatted
+                const contactData = {
+                    name: fullName || name || company || title || null,
+                    linkedin: linkedin || null,
+                    whatsapp: whatsapp || null,
+                    email: email || null,
+                    company: company || null,
+                    rawText: rawText || null,
+                    imageUrls: imageUrls // Array of image URLs
+                };
+                
+                // Remove undefined fields
+                Object.keys(contactData).forEach(key => {
+                    if (contactData[key] === undefined) {
+                        delete contactData[key];
+                    }
                 });
+                
+                await apiClient.createContact(contactData);
                 
                 statusBox.classList.remove('show');
                 showToast('Contact saved successfully. View in contact list.');
