@@ -704,6 +704,38 @@
             window.location.href = 'contact.html';
         }
 
+        async function uploadImagesToR2(files) {
+            const imageUrls = [];
+            
+            for (const file of files) {
+                try {
+                    const formData = new FormData();
+                    formData.append('file', file);
+
+                    const response = await fetch(`${API_BASE}/api/upload-image`, {
+                        method: 'POST',
+                        credentials: 'include',
+                        body: formData,
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json().catch(() => ({ error: 'Upload failed' }));
+                        throw new Error(error.error || 'Upload failed');
+                    }
+
+                    const result = await response.json();
+                    if (result.success && result.url) {
+                        imageUrls.push(result.url);
+                    }
+                } catch (error) {
+                    console.error(`Failed to upload image ${file.name}:`, error);
+                    // Continue with other images even if one fails
+                }
+            }
+            
+            return imageUrls;
+        }
+
         async function saveContact() {
             const name = document.getElementById('name-input').value.trim();
             const company = document.getElementById('company-input').value.trim();
@@ -721,6 +753,22 @@
             }
 
             try {
+                // 上传图片到 R2
+                let imageUrls = [];
+                if (selectedFiles.length > 0) {
+                    statusText.textContent = '正在上传图片...';
+                    statusBox.classList.add('show');
+                    try {
+                        imageUrls = await uploadImagesToR2(selectedFiles);
+                        if (imageUrls.length > 0) {
+                            showToast(`✓ 已上传 ${imageUrls.length} 张图片`);
+                        }
+                    } catch (error) {
+                        console.error('Image upload error:', error);
+                        showToast('⚠️ 图片上传失败，但联系人信息将继续保存');
+                    }
+                }
+
                 // 构建rawText，包含所有识别到的信息
                 const rawTextParts = [];
                 if (name) rawTextParts.push(`姓名: ${name}`);
@@ -739,11 +787,15 @@
                     linkedin,
                     whatsapp,
                     email,
-                    rawText: rawText
+                    rawText: rawText,
+                    imageUrls: imageUrls.length > 0 ? imageUrls : undefined
                 });
+                
+                statusBox.classList.remove('show');
                 showToast('✓ 已保存到通讯录，可在联系人列表查看');
             } catch (error) {
                 console.error(error);
+                statusBox.classList.remove('show');
                 showToast(`⚠️ 保存失败：${error.message}`);
             }
         }
