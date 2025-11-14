@@ -271,6 +271,39 @@
             color: #2563eb;
             margin-left: 6px;
         }
+
+        .company-cell {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .company-name {
+            flex: 1;
+        }
+
+        .company-search-btn {
+            padding: 4px 10px;
+            border: 1px solid #2193b0;
+            border-radius: 6px;
+            background: white;
+            color: #2193b0;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .company-search-btn:hover {
+            background: #2193b0;
+            color: white;
+        }
+
+        .company-info {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 2px;
+        }
     </style>
 </head>
 <body>
@@ -299,7 +332,8 @@
             <table id="contactsTable" style="display: none;">
                 <thead>
                     <tr>
-                        <th>姓名 / 公司</th>
+                        <th>姓名</th>
+                        <th>公司</th>
                         <th>LinkedIn</th>
                         <th>电话 / WhatsApp</th>
                         <th>Email</th>
@@ -376,20 +410,104 @@
             contacts = Array.isArray(response.contacts) ? response.contacts : [];
         }
 
+        // 从rawText中解析公司信息
+        function parseCompanyFromRawText(rawText) {
+            if (!rawText) return null;
+            
+            // 尝试从格式化的rawText中提取：公司: xxx
+            const companyMatch = rawText.match(/公司[：:]\s*(.+?)(?:\n|$)/i);
+            if (companyMatch && companyMatch[1]) {
+                return companyMatch[1].trim();
+            }
+            
+            // 如果没有格式化，尝试从name字段中提取（格式可能是"姓名 / 公司 / 职业"）
+            return null;
+        }
+
+        // 从name字段中解析姓名、公司、职业
+        function parseNameFields(name) {
+            if (!name) return { name: null, company: null, title: null };
+            
+            const parts = name.split(' / ').map(p => p.trim()).filter(p => p);
+            
+            // 通常格式：姓名 / 公司 / 职业 或 姓名 / 公司
+            let parsedName = parts[0] || null;
+            let parsedCompany = null;
+            let parsedTitle = null;
+            
+            if (parts.length >= 2) {
+                // 判断第二部分是公司还是职业
+                const companyKeywords = ['公司', '有限公司', '股份有限公司', 'corporation', 'corp', 'ltd', 'inc', 'co.', 'company'];
+                const isCompany = companyKeywords.some(keyword => 
+                    parts[1].toLowerCase().includes(keyword.toLowerCase())
+                );
+                
+                if (isCompany) {
+                    parsedCompany = parts[1];
+                    if (parts.length >= 3) {
+                        parsedTitle = parts[2];
+                    }
+                } else {
+                    parsedTitle = parts[1];
+                    if (parts.length >= 3) {
+                        parsedCompany = parts[2];
+                    }
+                }
+            }
+            
+            return { name: parsedName, company: parsedCompany, title: parsedTitle };
+        }
+
         function renderContacts() {
             const search = document.getElementById('searchInput').value.trim().toLowerCase();
-            const filtered = contacts
+            
+            // 处理联系人数据，解析公司信息
+            const processedContacts = contacts.map(contact => {
+                let company = contact.company || null;
+                let { name, company: parsedCompany, title } = parseNameFields(contact.name);
+                
+                // 优先使用rawText中的公司信息
+                const rawTextCompany = parseCompanyFromRawText(contact.rawText);
+                if (rawTextCompany) {
+                    company = rawTextCompany;
+                } else if (parsedCompany) {
+                    company = parsedCompany;
+                }
+                
+                // 如果没有解析出公司，但name包含公司信息，尝试从name中提取
+                if (!company && contact.name) {
+                    const companyKeywords = ['公司', '有限公司', '股份有限公司', 'corporation', 'corp', 'ltd', 'inc'];
+                    const nameParts = contact.name.split(/[\/|,，]/).map(p => p.trim());
+                    const companyPart = nameParts.find(part => 
+                        companyKeywords.some(keyword => part.toLowerCase().includes(keyword.toLowerCase()))
+                    );
+                    if (companyPart) {
+                        company = companyPart;
+                    }
+                }
+                
+                return {
+                    ...contact,
+                    parsedName: name || contact.name || '未命名联系人',
+                    company: company,
+                    title: title
+                };
+            });
+            
+            const filtered = processedContacts
                 .filter(contact => {
                     if (!search) return true;
                     const source = [
-                        contact.name,
+                        contact.parsedName || contact.name,
                         contact.company,
+                        contact.title,
                         contact.linkedin,
                         contact.whatsapp,
                         contact.phone,
                         contact.email,
                         contact.rawText,
                     ]
+                        .filter(Boolean)
                         .join(' ')
                         .toLowerCase();
                     return source.includes(search);
@@ -423,8 +541,37 @@
                     return td;
                 };
 
-                row.appendChild(cell(contact.name || contact.company || '未命名联系人'));
+                // 姓名列
+                row.appendChild(cell(contact.parsedName || contact.name || '未命名联系人'));
 
+                // 公司列（带查找按钮）
+                const companyTd = document.createElement('td');
+                const companyCell = document.createElement('div');
+                companyCell.className = 'company-cell';
+                
+                if (contact.company) {
+                    const companyName = document.createElement('div');
+                    companyName.className = 'company-name';
+                    companyName.textContent = contact.company;
+                    companyCell.appendChild(companyName);
+                    
+                    const searchBtn = document.createElement('button');
+                    searchBtn.className = 'company-search-btn';
+                    searchBtn.textContent = '🔍 查找';
+                    searchBtn.title = '在LinkedIn上查找公司信息';
+                    searchBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        searchCompanyOnLinkedIn(contact.company);
+                    };
+                    companyCell.appendChild(searchBtn);
+                } else {
+                    companyCell.textContent = '—';
+                }
+                
+                companyTd.appendChild(companyCell);
+                row.appendChild(companyTd);
+
+                // LinkedIn列
                 const linkedinTd = document.createElement('td');
                 if (contact.linkedin) {
                     const link = document.createElement('a');
@@ -479,6 +626,25 @@
             });
         }
 
+        // 在LinkedIn上搜索公司信息
+        function searchCompanyOnLinkedIn(companyName) {
+            if (!companyName) {
+                showToast('⚠️ 公司名称为空');
+                return;
+            }
+            
+            // 清理公司名称，移除常见的公司后缀以获取更准确的搜索结果
+            let searchTerm = companyName.trim();
+            
+            // LinkedIn搜索URL
+            const encodedCompany = encodeURIComponent(searchTerm);
+            const linkedInSearchUrl = `https://www.linkedin.com/search/results/companies/?keywords=${encodedCompany}`;
+            
+            // 打开新标签页
+            window.open(linkedInSearchUrl, '_blank');
+            showToast(`✓ 正在LinkedIn上搜索 "${searchTerm}"`);
+        }
+
         async function clearContacts() {
             if (!confirm('确认要清空所有名片联系人吗？此操作无法撤销。')) {
                 return;
@@ -503,13 +669,30 @@
                 return;
             }
 
-            const headers = ['姓名/公司', 'LinkedIn', '电话/WhatsApp', 'Email', '保存时间'];
-            const rows = contacts.map(contact => [
-                contact.name || contact.company || '',
-                contact.linkedin || '',
-                contact.whatsapp || contact.phone || '',
-                contact.email || '',
-                contact.createdAt ? new Date(contact.createdAt).toLocaleString() : '',
+            // 处理联系人数据以导出
+            const processedContacts = contacts.map(contact => {
+                const rawTextCompany = parseCompanyFromRawText(contact.rawText);
+                const { name, company: parsedCompany } = parseNameFields(contact.name);
+                const company = contact.company || rawTextCompany || parsedCompany || '';
+                
+                return {
+                    name: name || contact.name || '',
+                    company: company,
+                    linkedin: contact.linkedin || '',
+                    whatsapp: contact.whatsapp || contact.phone || '',
+                    email: contact.email || '',
+                    createdAt: contact.createdAt ? new Date(contact.createdAt).toLocaleString() : '',
+                };
+            });
+
+            const headers = ['姓名', '公司', 'LinkedIn', '电话/WhatsApp', 'Email', '保存时间'];
+            const rows = processedContacts.map(contact => [
+                contact.name,
+                contact.company,
+                contact.linkedin,
+                contact.whatsapp,
+                contact.email,
+                contact.createdAt,
             ]);
 
             const csvContent = [headers, ...rows]

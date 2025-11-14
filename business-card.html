@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>名片识别导入</title>
     <style>
         * {
@@ -109,12 +112,65 @@
             color: #888;
         }
 
-        #image-preview {
-            width: 100%;
-            border-radius: 12px;
-            margin-bottom: 20px;
+        .images-preview-container {
             display: none;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            margin-bottom: 20px;
+        }
+
+        .images-preview-container.show {
+            display: block;
+        }
+
+        .images-preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .image-preview-item {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            aspect-ratio: 1;
+        }
+
+        .image-preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-preview-item .remove-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(255, 77, 79, 0.9);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            line-height: 1;
+            transition: all 0.2s;
+        }
+
+        .image-preview-item .remove-btn:hover {
+            background: rgba(255, 77, 79, 1);
+            transform: scale(1.1);
+        }
+
+        .images-count {
+            text-align: center;
+            font-size: 13px;
+            color: #888;
+            margin-top: 8px;
         }
 
         .status {
@@ -265,12 +321,15 @@
 
         <div class="upload-area" id="uploadArea">
             <div class="upload-icon">📷</div>
-            <div class="upload-text">点击或拖拽名片照片到此处</div>
-            <div class="upload-hint">支持 JPG / PNG / HEIC，建议清晰正面照片</div>
-            <input type="file" id="fileInput" accept="image/*" style="display:none;">
+            <div class="upload-text">点击或拖拽名片照片到此处（最多3张）</div>
+            <div class="upload-hint">支持 JPG / PNG / HEIC，可一次选择多张或分批上传，最多3张</div>
+            <input type="file" id="fileInput" accept="image/*" multiple style="display:none;">
         </div>
 
-        <img id="image-preview" alt="名片预览">
+        <div class="images-preview-container" id="imagesPreviewContainer">
+            <div class="images-preview-grid" id="imagesPreviewGrid"></div>
+            <div class="images-count" id="imagesCount"></div>
+        </div>
 
         <div class="status" id="status">
             <span id="statusText">正在识别中，请稍候...</span>
@@ -280,8 +339,18 @@
 
         <div class="form-section">
             <div class="form-group">
-                <label class="form-label">姓名 / 公司</label>
-                <input type="text" class="form-input" id="name-input" placeholder="匹配到的名字或公司会自动填入">
+                <label class="form-label">姓名</label>
+                <input type="text" class="form-input" id="name-input" placeholder="匹配到的姓名会自动填入">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">公司</label>
+                <input type="text" class="form-input" id="company-input" placeholder="匹配到的公司名称会自动填入">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">职业</label>
+                <input type="text" class="form-input" id="title-input" placeholder="匹配到的职位/职业会自动填入">
             </div>
 
             <div class="form-group">
@@ -368,9 +437,14 @@
             }
         }
 
+        const MAX_IMAGES = 3;
+        let selectedFiles = [];
+
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
-        const imagePreview = document.getElementById('image-preview');
+        const imagesPreviewContainer = document.getElementById('imagesPreviewContainer');
+        const imagesPreviewGrid = document.getElementById('imagesPreviewGrid');
+        const imagesCount = document.getElementById('imagesCount');
         const statusBox = document.getElementById('status');
         const statusText = document.getElementById('statusText');
         const rawResults = document.getElementById('rawResults');
@@ -389,58 +463,158 @@
         uploadArea.addEventListener('drop', (event) => {
             event.preventDefault();
             uploadArea.classList.remove('dragover');
-            if (event.dataTransfer.files && event.dataTransfer.files[0]) {
-                handleFile(event.dataTransfer.files[0]);
+            if (event.dataTransfer.files && event.dataTransfer.files.length > 0) {
+                handleFiles(Array.from(event.dataTransfer.files));
             }
         });
 
         fileInput.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (file) {
-                handleFile(file);
+            if (event.target.files && event.target.files.length > 0) {
+                const files = Array.from(event.target.files);
+                handleFiles(files);
+                // 重置文件输入，允许再次选择（累积到3张）
+                // 注意：如果已经达到3张，下次选择时会提示
+                event.target.value = '';
             }
         });
 
-        function handleFile(file) {
-            if (!file.type.startsWith('image/')) {
+        function handleFiles(files) {
+            const imageFiles = files.filter(file => file.type.startsWith('image/'));
+            
+            if (imageFiles.length === 0) {
                 showToast('⚠️ 请上传图片文件');
                 return;
             }
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                imagePreview.src = e.target.result;
-                imagePreview.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
+            // 检查是否已满
+            if (selectedFiles.length >= MAX_IMAGES) {
+                showToast(`⚠️ 已达到最大数量${MAX_IMAGES}张，请先删除部分图片`);
+                return;
+            }
 
-            runOCR(file);
+            const remainingSlots = MAX_IMAGES - selectedFiles.length;
+            
+            // 如果选择的文件数量超过剩余槽位，只取前面的
+            const filesToProcess = imageFiles.slice(0, remainingSlots);
+            
+            if (imageFiles.length > remainingSlots) {
+                showToast(`⚠️ 最多只能上传${MAX_IMAGES}张图片，已选择${selectedFiles.length}张，将只添加前${remainingSlots}张`);
+            }
+
+            let hasNewFiles = false;
+            
+            // 检查重复文件并添加新文件
+            filesToProcess.forEach(file => {
+                // 检查是否已存在同名且同大小的文件
+                const isDuplicate = selectedFiles.some(existing => 
+                    existing.name === file.name && existing.size === file.size
+                );
+                
+                if (!isDuplicate && selectedFiles.length < MAX_IMAGES) {
+                    selectedFiles.push(file);
+                    addImagePreview(file);
+                    hasNewFiles = true;
+                } else if (isDuplicate) {
+                    showToast(`⚠️ 文件 "${file.name}" 已存在，跳过`);
+                }
+            });
+
+            updateImagesCount();
+            
+            // 只在有新文件添加时才重新识别
+            if (hasNewFiles) {
+                runOCROnAllImages();
+            }
         }
 
-        async function runOCR(file) {
+        function addImagePreview(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const previewItem = document.createElement('div');
+                previewItem.className = 'image-preview-item';
+                previewItem.dataset.filename = file.name;
+
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.alt = file.name;
+
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'remove-btn';
+                removeBtn.innerHTML = '×';
+                removeBtn.onclick = () => removeImage(file.name);
+
+                previewItem.appendChild(img);
+                previewItem.appendChild(removeBtn);
+                imagesPreviewGrid.appendChild(previewItem);
+
+                imagesPreviewContainer.classList.add('show');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeImage(filename) {
+            selectedFiles = selectedFiles.filter(file => file.name !== filename);
+            const previewItem = imagesPreviewGrid.querySelector(`[data-filename="${filename}"]`);
+            if (previewItem) {
+                previewItem.remove();
+            }
+            
+            if (selectedFiles.length === 0) {
+                imagesPreviewContainer.classList.remove('show');
+                clearFields();
+            } else {
+                updateImagesCount();
+                runOCROnAllImages();
+            }
+        }
+
+        function updateImagesCount() {
+            imagesCount.textContent = `已选择 ${selectedFiles.length}/${MAX_IMAGES} 张图片`;
+        }
+
+        async function runOCROnAllImages() {
+            if (selectedFiles.length === 0) {
+                statusBox.classList.remove('show');
+                rawResults.style.display = 'none';
+                rawResults.textContent = '';
+                return;
+            }
+
             statusText.textContent = '正在识别中，请稍候...';
             statusBox.classList.add('show');
             rawResults.style.display = 'none';
             rawResults.textContent = '';
 
-            try {
-                const { data } = await Tesseract.recognize(file, 'eng+chi_sim', {
-                    logger: m => {
-                        if (m.status === 'recognizing text') {
-                            statusText.textContent = `正在识别中... (${Math.round(m.progress * 100)}%)`;
+            let allText = '';
+            let completedCount = 0;
+
+            for (let i = 0; i < selectedFiles.length; i++) {
+                const file = selectedFiles[i];
+                try {
+                    statusText.textContent = `正在识别第 ${i + 1}/${selectedFiles.length} 张图片...`;
+                    const { data } = await Tesseract.recognize(file, 'eng+chi_sim', {
+                        logger: m => {
+                            if (m.status === 'recognizing text') {
+                                statusText.textContent = `正在识别第 ${i + 1}/${selectedFiles.length} 张... (${Math.round(m.progress * 100)}%)`;
+                            }
                         }
+                    });
+
+                    if (data.text) {
+                        allText += (allText ? '\n\n--- 分割线 ---\n\n' : '') + data.text.trim();
                     }
-                });
+                    completedCount++;
+                } catch (error) {
+                    console.error(`Error recognizing image ${i + 1}:`, error);
+                }
+            }
 
-                const text = data.text || '';
-                rawResults.textContent = text.trim();
-                rawResults.style.display = text.trim() ? 'block' : 'none';
-
-                populateFieldsFromText(text);
-
-                statusText.textContent = '识别完成，可检查并调整信息';
-            } catch (error) {
-                console.error(error);
+            if (allText.trim()) {
+                rawResults.textContent = allText.trim();
+                rawResults.style.display = 'block';
+                populateFieldsFromText(allText);
+                statusText.textContent = `识别完成 (${completedCount}/${selectedFiles.length}张)，可检查并调整信息`;
+            } else {
                 statusText.textContent = '识别失败，请重试或更换更清晰的图片';
                 showToast('⚠️ 识别失败，请检查网络或图片清晰度');
             }
@@ -448,27 +622,82 @@
 
         function populateFieldsFromText(text) {
             const lines = text.split(/\r?\n/).map(line => line.trim()).filter(line => line);
-
+            
+            // 邮箱匹配
             const emailMatch = text.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
-            const linkedinMatch = text.match(/(https?:\/\/)?(www\.)?linkedin\.com\/in\/[A-Za-z0-9\-_%]+/i);
-            const phoneMatch = text.match(/(\+?\d[\d\s\-()]{6,}\d)/);
-
-            if (lines.length) {
-                document.getElementById('name-input').value = lines[0];
+            if (emailMatch) {
+                document.getElementById('email-input').value = emailMatch[0];
             }
 
+            // LinkedIn匹配
+            const linkedinMatch = text.match(/(https?:\/\/)?(www\.)?linkedin\.com\/in\/[A-Za-z0-9\-_%]+/i);
             if (linkedinMatch) {
                 const value = linkedinMatch[0];
                 document.getElementById('linkedin-input').value = value.startsWith('http') ? value : `https://${value.replace(/^\/\//, '')}`;
             }
 
+            // 电话/WhatsApp匹配
+            const phoneMatch = text.match(/(\+?\d[\d\s\-()]{6,}\d)/);
             if (phoneMatch) {
-                document.getElementById('whatsapp-input').value = phoneMatch[0].replace(/\s+/g, ' ');
+                document.getElementById('whatsapp-input').value = phoneMatch[0].replace(/\s+/g, ' ').trim();
             }
 
-            if (emailMatch) {
-                document.getElementById('email-input').value = emailMatch[0];
+            // 提取姓名、公司、职业
+            if (lines.length > 0) {
+                // 第一行通常是姓名
+                const nameInput = document.getElementById('name-input');
+                if (!nameInput.value.trim()) {
+                    nameInput.value = lines[0];
+                }
+
+                // 查找包含"公司"、"有限公司"、"股份有限公司"等的行作为公司
+                const companyKeywords = ['公司', '有限公司', '股份有限公司', 'corporation', 'corp', 'ltd', 'inc', 'co.', 'company'];
+                const companyLine = lines.find(line => 
+                    companyKeywords.some(keyword => line.toLowerCase().includes(keyword.toLowerCase()))
+                );
+                if (companyLine && !document.getElementById('company-input').value.trim()) {
+                    document.getElementById('company-input').value = companyLine;
+                }
+
+                // 查找包含职位关键词的行作为职业
+                const titleKeywords = ['经理', '总监', '主管', '工程师', '经理', '主任', '总监', '经理', 'ceo', 'cto', 'manager', 'director', 'engineer', 'developer', 'designer', '主管', '助理', '专员'];
+                const titleLine = lines.find(line => 
+                    titleKeywords.some(keyword => line.toLowerCase().includes(keyword.toLowerCase())) &&
+                    !companyKeywords.some(keyword => line.toLowerCase().includes(keyword.toLowerCase()))
+                );
+                if (titleLine && !document.getElementById('title-input').value.trim()) {
+                    document.getElementById('title-input').value = titleLine;
+                }
+
+                // 如果没有找到明确的公司，第二行可能是公司
+                if (!document.getElementById('company-input').value.trim() && lines.length > 1) {
+                    const secondLine = lines[1];
+                    // 如果第二行看起来不像姓名（不包含职位关键词），可能是公司
+                    if (!titleKeywords.some(keyword => secondLine.toLowerCase().includes(keyword.toLowerCase()))) {
+                        document.getElementById('company-input').value = secondLine;
+                    }
+                }
+
+                // 如果没有找到明确的职业，第三行可能是职业
+                if (!document.getElementById('title-input').value.trim() && lines.length > 2) {
+                    const thirdLine = lines[2];
+                    if (!companyKeywords.some(keyword => thirdLine.toLowerCase().includes(keyword.toLowerCase()))) {
+                        document.getElementById('title-input').value = thirdLine;
+                    }
+                }
             }
+        }
+
+        function clearFields() {
+            document.getElementById('name-input').value = '';
+            document.getElementById('company-input').value = '';
+            document.getElementById('title-input').value = '';
+            document.getElementById('linkedin-input').value = '';
+            document.getElementById('whatsapp-input').value = '';
+            document.getElementById('email-input').value = '';
+            rawResults.textContent = '';
+            rawResults.style.display = 'none';
+            statusBox.classList.remove('show');
         }
 
         function goBack() {
@@ -477,22 +706,40 @@
 
         async function saveContact() {
             const name = document.getElementById('name-input').value.trim();
+            const company = document.getElementById('company-input').value.trim();
+            const title = document.getElementById('title-input').value.trim();
             const linkedin = document.getElementById('linkedin-input').value.trim();
             const whatsapp = document.getElementById('whatsapp-input').value.trim();
             const email = document.getElementById('email-input').value.trim();
 
-            if (!name && !linkedin && !whatsapp && !email) {
+            // 将姓名、公司、职业组合到name字段中（如果API不支持单独字段）
+            const fullName = [name, company, title].filter(Boolean).join(' / ').trim();
+
+            if (!fullName && !linkedin && !whatsapp && !email) {
                 showToast('⚠️ 请至少填写一项信息再保存');
                 return;
             }
 
             try {
+                // 构建rawText，包含所有识别到的信息
+                const rawTextParts = [];
+                if (name) rawTextParts.push(`姓名: ${name}`);
+                if (company) rawTextParts.push(`公司: ${company}`);
+                if (title) rawTextParts.push(`职业: ${title}`);
+                if (linkedin) rawTextParts.push(`LinkedIn: ${linkedin}`);
+                if (whatsapp) rawTextParts.push(`WhatsApp: ${whatsapp}`);
+                if (email) rawTextParts.push(`Email: ${email}`);
+                if (rawResults.textContent.trim()) {
+                    rawTextParts.push('\n原始识别文本:\n' + rawResults.textContent.trim());
+                }
+                const rawText = rawTextParts.join('\n');
+
                 await apiClient.createContact({
-                    name,
+                    name: fullName || name || company || title, // 优先使用组合名称
                     linkedin,
                     whatsapp,
                     email,
-                    rawText: rawResults.textContent || ''
+                    rawText: rawText
                 });
                 showToast('✓ 已保存到通讯录，可在联系人列表查看');
             } catch (error) {

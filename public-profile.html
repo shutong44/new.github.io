@@ -442,6 +442,9 @@
                 } else {
                     showToast('✓ 已保存到我的联系人');
                 }
+                setTimeout(() => {
+                    window.location.href = 'https://www.google.com/';
+                }, 1200);
             } catch (error) {
                 console.error(error);
                 showToast(`⚠️ 保存失败：${error.message || '未知错误'}`);
