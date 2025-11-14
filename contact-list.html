@@ -239,6 +239,52 @@
             background: #fecaca;
         }
 
+        /* Image Preview */
+        .images-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 12px;
+            min-height: 60px;
+        }
+
+        .image-preview-item {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #e2e8f0;
+        }
+
+        .image-preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-preview-item .remove-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .image-preview-item .remove-btn:hover {
+            background: rgba(220, 38, 38, 0.9);
+        }
+
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -527,6 +573,17 @@
                     <label class="form-label">Note</label>
                     <textarea class="form-textarea" id="edit-note" placeholder="Add personal notes about this contact..."></textarea>
             </div>
+                <div class="form-group">
+                    <label class="form-label">Images</label>
+                    <div id="edit-images-preview" class="images-preview"></div>
+                    <div style="display: flex; gap: 8px; margin-top: 8px;">
+                        <button type="button" class="btn btn-secondary" onclick="document.getElementById('edit-images-input').click()" style="padding: 8px 16px; font-size: 13px;">+ Add Images</button>
+                        <input type="file" id="edit-images-input" accept="image/*" multiple style="display: none;" onchange="handleEditImagesSelect(event)">
+                    </div>
+                    <div style="font-size: 12px; color: #64748b; margin-top: 4px;">
+                        Upload images to associate with this contact
+                    </div>
+                </div>
                 <div class="form-group">
                     <label class="form-label">Raw Text <span style="color: #94a3b8; font-size: 11px; font-weight: normal; text-transform: none;">(private)</span></label>
                     <textarea class="form-textarea" id="edit-raw"></textarea>
@@ -972,15 +1029,115 @@
             document.getElementById('edit-note').value = contact.note || '';
             document.getElementById('edit-raw').value = contact.rawText || '';
 
+            // Load existing images
+            editSelectedFiles = [];
+            let imageUrls = contact.imageUrls || [];
+            if (typeof imageUrls === 'string') {
+                try {
+                    imageUrls = JSON.parse(imageUrls);
+                } catch (e) {
+                    imageUrls = [];
+                }
+            }
+            if (!Array.isArray(imageUrls)) {
+                imageUrls = [];
+            }
+            editExistingImageUrls = [...imageUrls];
+            renderEditImagePreview();
+
             document.getElementById('editModal').classList.add('show');
         }
 
         function closeEditModal() {
             document.getElementById('editModal').classList.remove('show');
             editingContactId = null;
+            editSelectedFiles = [];
+            editExistingImageUrls = [];
+            document.getElementById('edit-images-input').value = '';
         }
 
-        function saveEditedContact(event) {
+        function handleEditImagesSelect(event) {
+            const files = Array.from(event.target.files);
+            editSelectedFiles = [...editSelectedFiles, ...files];
+            renderEditImagePreview();
+        }
+
+        function renderEditImagePreview() {
+            const previewContainer = document.getElementById('edit-images-preview');
+            previewContainer.innerHTML = '';
+
+            // Show existing images
+            editExistingImageUrls.forEach((url, index) => {
+                const item = document.createElement('div');
+                item.className = 'image-preview-item';
+                item.innerHTML = `
+                    <img src="${url}" alt="Existing image ${index + 1}">
+                    <button type="button" class="remove-btn" onclick="removeEditExistingImage(${index})">×</button>
+                `;
+                previewContainer.appendChild(item);
+            });
+
+            // Show new selected files
+            editSelectedFiles.forEach((file, index) => {
+                const item = document.createElement('div');
+                item.className = 'image-preview-item';
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    item.innerHTML = `
+                        <img src="${e.target.result}" alt="New image ${index + 1}">
+                        <button type="button" class="remove-btn" onclick="removeEditSelectedFile(${index})">×</button>
+                    `;
+                };
+                reader.readAsDataURL(file);
+                previewContainer.appendChild(item);
+            });
+        }
+
+        function removeEditExistingImage(index) {
+            editExistingImageUrls.splice(index, 1);
+            renderEditImagePreview();
+        }
+
+        function removeEditSelectedFile(index) {
+            editSelectedFiles.splice(index, 1);
+            renderEditImagePreview();
+            // Reset file input
+            document.getElementById('edit-images-input').value = '';
+        }
+
+        async function uploadImagesToR2(files) {
+            const imageUrls = [];
+            const API_BASE = window.__API_BASE__ || window.location.origin || 'https://cloudflare-worker-google-oauth.wangshutong774.workers.dev';
+            
+            for (const file of files) {
+                try {
+                    const formData = new FormData();
+                    formData.append('image', file);
+                    
+                    const response = await fetch(`${API_BASE}/api/upload-image`, {
+                        method: 'POST',
+                        credentials: 'include',
+                        body: formData,
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`Upload failed: ${response.statusText}`);
+                    }
+                    
+                    const data = await response.json();
+                    if (data.url) {
+                        imageUrls.push(data.url);
+                    }
+                } catch (error) {
+                    console.error('Error uploading image:', error);
+                    // Continue with other images even if one fails
+                }
+            }
+            
+            return imageUrls;
+        }
+
+        async function saveEditedContact(event) {
             event.preventDefault();
             
             if (!editingContactId) {
@@ -1009,6 +1166,24 @@
                 updatedRawText = rawTextParts.join('\n');
             }
 
+            // Upload new images
+            let newImageUrls = [];
+            if (editSelectedFiles.length > 0) {
+                try {
+                    showToast('Uploading images...');
+                    newImageUrls = await uploadImagesToR2(editSelectedFiles);
+                    if (newImageUrls.length > 0) {
+                        showToast(`Uploaded ${newImageUrls.length} image${newImageUrls.length !== 1 ? 's' : ''}`);
+                    }
+                } catch (error) {
+                    console.error('Image upload error:', error);
+                    showToast('Image upload failed, but contact will still be saved');
+                }
+            }
+
+            // Combine existing and new image URLs
+            const allImageUrls = [...editExistingImageUrls, ...newImageUrls];
+
             const updated = {
                 name: fullName,
                 linkedin: linkedin,
@@ -1016,23 +1191,22 @@
                 email: email,
                 note: note,
                 rawText: updatedRawText,
+                imageUrls: allImageUrls.length > 0 ? allImageUrls : undefined,
             };
 
-            apiClient
-                .updateContact(editingContactId, updated)
-                .then(async ({ contact }) => {
-                    if (contact) {
-                        // Reload contacts to ensure we have the latest data
-                        await loadContacts();
-                            renderContacts();
-                    }
-                    closeEditModal();
-                    showToast('Contact updated successfully');
-                })
-                .catch(error => {
-                    console.error(error);
-                    showToast(`Update failed: ${error.message}`);
-                });
+            try {
+                const { contact } = await apiClient.updateContact(editingContactId, updated);
+                if (contact) {
+                    // Reload contacts to ensure we have the latest data
+                    await loadContacts();
+                    renderContacts();
+                }
+                closeEditModal();
+                showToast('Contact updated successfully');
+            } catch (error) {
+                console.error(error);
+                showToast(`Update failed: ${error.message}`);
+            }
         }
 
         function deleteContact(id) {
