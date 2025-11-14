@@ -207,6 +207,7 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 24px;
+            padding-bottom: 100px; /* Add padding to prevent content from being hidden behind bottom actions */
         }
 
         .search-section {
@@ -630,11 +631,10 @@
             <div class="actions">
                 <button class="btn btn-secondary" onclick="goToContact()">Back</button>
                 <button class="btn btn-secondary" onclick="goToBusinessCard()">Scan Card</button>
-                <button class="btn btn-primary" onclick="goToConferences()">📅 Conferences</button>
                 <button class="btn btn-secondary" onclick="document.getElementById('csvUploadInput').click()">Import CSV</button>
                 <button class="btn btn-primary" onclick="exportContacts()">Export CSV</button>
                 <button class="btn btn-primary" onclick="enableAILinkedInMode()" id="aiLinkedInBtn">🤖 AI LinkedIn</button>
-                <button class="btn btn-secondary toggle-selection-btn" onclick="toggleSelectionMode()" id="toggleSelectionBtn">✓ Select</button>
+                <button class="btn btn-secondary toggle-selection-btn" onclick="addToConferenceList()" id="addConferenceListBtn">Add Conference List</button>
                 <input type="file" id="csvUploadInput" accept=".csv" style="display: none;" onchange="handleCSVUpload(event)">
             </div>
             </div>
@@ -732,6 +732,12 @@
     </div>
 
     <div class="toast" id="toast"></div>
+
+    <!-- Bottom Actions -->
+    <div class="bottom-actions">
+        <button class="action-btn secondary" onclick="goToContact()">👤 My Contact</button>
+        <button class="action-btn secondary" onclick="goToConferences()">📅 Conferences</button>
+    </div>
 
     <!-- Batch Actions Bar for Conference -->
     <div class="batch-actions-bar" id="batchActionsBar">
@@ -1127,13 +1133,79 @@
             window.open(searchUrl, '_blank');
         }
 
-        // Selection Mode Functions
+        // Add to Conference List Function
+        async function addToConferenceList() {
+            // Enable selection mode first
+            if (!selectionMode) {
+                selectionMode = true;
+                selectedContacts.clear();
+                aiLinkedInMode = false;
+                
+                const btn = document.getElementById('addConferenceListBtn');
+                const grid = document.getElementById('contactsGrid');
+                btn.textContent = '✗ Cancel';
+                grid.classList.add('selection-mode');
+                document.getElementById('batchActionsBar').classList.remove('show');
+                document.getElementById('aiLinkedInBar').style.display = 'none';
+                renderContacts();
+                
+                showToast('Select contacts to add to conference list');
+                return;
+            }
+            
+            // If already in selection mode and has selected contacts, proceed
+            if (selectedContacts.size === 0) {
+                // Exit selection mode if no contacts selected
+                selectionMode = false;
+                const btn = document.getElementById('addConferenceListBtn');
+                const grid = document.getElementById('contactsGrid');
+                btn.textContent = 'Add Conference List';
+                grid.classList.remove('selection-mode');
+                document.getElementById('batchActionsBar').classList.remove('show');
+                renderContacts();
+                return;
+            }
+            
+            // Prompt for conference name
+            const conferenceName = prompt('Enter conference name:', '');
+            if (!conferenceName || !conferenceName.trim()) {
+                return;
+            }
+            
+            try {
+                showToast(`Adding ${selectedContacts.size} contact(s) to "${conferenceName}"...`);
+                
+                // Update contacts with conference name
+                const promises = Array.from(selectedContacts).map(contactId => 
+                    apiClient.updateContact(contactId, { conference: conferenceName.trim() })
+                );
+                
+                await Promise.all(promises);
+                
+                showToast(`Successfully added ${selectedContacts.size} contact(s) to "${conferenceName}"`);
+                
+                // Exit selection mode
+                selectionMode = false;
+                selectedContacts.clear();
+                const btn = document.getElementById('addConferenceListBtn');
+                const grid = document.getElementById('contactsGrid');
+                btn.textContent = 'Add Conference List';
+                grid.classList.remove('selection-mode');
+                document.getElementById('batchActionsBar').classList.remove('show');
+                renderContacts();
+            } catch (error) {
+                console.error(error);
+                showToast('Failed to add contacts to conference: ' + error.message);
+            }
+        }
+
+        // Selection Mode Functions (kept for backward compatibility)
         function toggleSelectionMode() {
             selectionMode = !selectionMode;
             selectedContacts.clear();
             aiLinkedInMode = false;
             
-            const btn = document.getElementById('toggleSelectionBtn');
+            const btn = document.getElementById('addConferenceListBtn');
             const grid = document.getElementById('contactsGrid');
             
             if (selectionMode) {
@@ -1143,7 +1215,7 @@
                 document.getElementById('aiLinkedInBar').style.display = 'none';
                 renderContacts();
             } else {
-                btn.textContent = '✓ Select';
+                btn.textContent = 'Add Conference List';
                 grid.classList.remove('selection-mode');
                 document.getElementById('batchActionsBar').classList.remove('show');
                 renderContacts();
@@ -1239,7 +1311,12 @@
         function exitSelectionMode() {
             selectionMode = false;
             selectedContacts.clear();
-            toggleSelectionMode();
+            const btn = document.getElementById('addConferenceListBtn');
+            const grid = document.getElementById('contactsGrid');
+            btn.textContent = 'Add Conference List';
+            grid.classList.remove('selection-mode');
+            document.getElementById('batchActionsBar').classList.remove('show');
+            renderContacts();
         }
 
         // AI LinkedIn Functions
@@ -1265,7 +1342,7 @@
             document.getElementById('batchActionsBar').classList.remove('show');
             
             // Reset selection mode UI
-            document.getElementById('toggleSelectionBtn').textContent = '✓ Select';
+            document.getElementById('addConferenceListBtn').textContent = 'Add Conference List';
             document.getElementById('contactsGrid').classList.remove('selection-mode');
             
             renderContacts();
