@@ -90,6 +90,12 @@
     async getPublicProfile(slug) {
       return request(`/api/public-profile/${encodeURIComponent(slug)}`);
     },
+    async findLinkedInByAI(contactData) {
+      return request('/api/contacts/find-linkedin-ai', {
+        method: 'POST',
+        body: contactData,
+      });
+    },
     async logout() {
       return request('/logout', { method: 'POST', body: {} });
     },

@@ -96,6 +96,113 @@
             background: rgba(255, 255, 255, 0.3);
         }
 
+        /* Selection Mode Styles */
+        .selection-mode .contact-card {
+            position: relative;
+            padding-left: 45px;
+        }
+
+        .contact-checkbox {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            z-index: 10;
+            accent-color: #667eea;
+        }
+
+        .batch-actions-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 16px 24px;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+            display: none;
+            align-items: center;
+            gap: 12px;
+            z-index: 1000;
+            flex-wrap: wrap;
+        }
+
+        .batch-actions-bar.show {
+            display: flex;
+        }
+
+        .selected-count {
+            font-weight: 600;
+            color: #667eea;
+            margin-right: 8px;
+            white-space: nowrap;
+        }
+
+        .conference-input-group {
+            display: flex;
+            gap: 8px;
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .conference-input-group input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .conference-input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .conference-tag {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            margin: 2px 4px 2px 0;
+        }
+
+        .missing-linkedin-badge {
+            display: inline-block;
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            margin: 2px 4px 2px 0;
+        }
+
+        .progress-bar {
+            width: 200px;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #667eea;
+            transition: width 0.3s;
+            width: 0%;
+        }
+
+        .ai-linkedin-progress {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -516,6 +623,8 @@
                 <button class="btn btn-secondary" onclick="goToBusinessCard()">Scan Card</button>
                 <button class="btn btn-secondary" onclick="document.getElementById('csvUploadInput').click()">Import CSV</button>
                 <button class="btn btn-primary" onclick="exportContacts()">Export CSV</button>
+                <button class="btn btn-primary" onclick="enableAILinkedInMode()" id="aiLinkedInBtn">🤖 AI LinkedIn</button>
+                <button class="btn btn-secondary toggle-selection-btn" onclick="toggleSelectionMode()" id="toggleSelectionBtn">✓ Select</button>
                 <input type="file" id="csvUploadInput" accept=".csv" style="display: none;" onchange="handleCSVUpload(event)">
             </div>
             </div>
@@ -560,14 +669,18 @@
                         <button type="button" class="btn btn-secondary" onclick="searchCompanyOnLinkedIn()" style="padding: 8px 16px; font-size: 13px; white-space: nowrap;" title="Search company on LinkedIn">
                             🔍 LinkedIn
                         </button>
-                    </div>
-                </div>
+            </div>
+            </div>
                 <div class="form-group">
                     <label class="form-label">Company Business</label>
                     <textarea class="form-textarea" id="edit-company-business" placeholder="What does this company do? (e.g., Software development, Marketing agency, etc.)" rows="2"></textarea>
                     <div style="font-size: 12px; color: #64748b; margin-top: 4px;">
                         Describe what this company does. You can fill this manually or use LinkedIn search above.
                     </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Conference</label>
+                    <input type="text" class="form-input" id="edit-conference" placeholder="e.g., A Conference, B Conference">
                 </div>
                 <div class="form-group">
                     <label class="form-label">LinkedIn</label>
@@ -610,11 +723,48 @@
 
     <div class="toast" id="toast"></div>
 
+    <!-- Batch Actions Bar for Conference -->
+    <div class="batch-actions-bar" id="batchActionsBar">
+        <span class="selected-count" id="selectedCount">0 selected</span>
+        <div class="conference-input-group">
+            <input type="text" id="conferenceInput" placeholder="Enter conference name (e.g., A Conference, B Conference)">
+            <button type="button" class="btn btn-primary" onclick="applyConferenceToSelected()">Apply Conference</button>
+        </div>
+        <button type="button" class="btn btn-secondary" onclick="clearSelectedConference()">Clear Conference</button>
+        <button type="button" class="btn btn-secondary" onclick="exitSelectionMode()">Cancel</button>
+    </div>
+
+    <!-- AI LinkedIn Batch Processing Bar -->
+    <div class="batch-actions-bar" id="aiLinkedInBar" style="display: none;">
+        <span class="selected-count">
+            <span id="missingLinkedInCount">0</span> contacts missing LinkedIn
+        </span>
+        <div style="display: flex; gap: 12px; align-items: center; flex: 1;">
+            <button type="button" class="btn btn-primary" onclick="processAILinkedIn()">
+                🔍 Find LinkedIn URLs (AI)
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="cancelAILinkedIn()">
+                Cancel
+            </button>
+        </div>
+        <div class="ai-linkedin-progress" id="aiLinkedInProgress" style="display: none;">
+            <span>Processing...</span>
+            <div class="progress-bar">
+                <div class="progress-fill" id="aiLinkedInProgressFill"></div>
+            </div>
+            <span id="aiLinkedInStatus">0 / 0</span>
+        </div>
+    </div>
+
     <script src="api-client.js"></script>
     <script>
         let contacts = [];
         let editingContactId = null;
         let viewingContactId = null;
+        let selectionMode = false;
+        let selectedContacts = new Set();
+        let aiLinkedInMode = false;
+        let contactsMissingLinkedIn = [];
 
         async function init() {
             try {
@@ -722,6 +872,7 @@
                         contact.phone,
                         contact.email,
                         contact.note,
+                        contact.conference,
                         contact.rawText,
                     ].filter(Boolean).join(' ').toLowerCase();
                     return source.includes(search);
@@ -746,6 +897,19 @@
             filtered.forEach((contact, index) => {
                 const card = document.createElement('div');
                 card.className = 'contact-card';
+                
+                // Add checkbox in selection mode
+                if (selectionMode) {
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.className = 'contact-checkbox';
+                    checkbox.checked = selectedContacts.has(contact.id);
+                    checkbox.onchange = (e) => {
+                        e.stopPropagation();
+                        toggleContactSelection(contact.id, checkbox);
+                    };
+                    card.appendChild(checkbox);
+                }
                 
                 // Add contact number badge
                 const numberBadge = document.createElement('div');
@@ -840,6 +1004,21 @@
                         window.open(linkedinItem.querySelector('a').href, '_blank');
                     });
                     meta.appendChild(linkedinItem);
+                } else if (aiLinkedInMode) {
+                    // Show missing LinkedIn badge in AI LinkedIn mode
+                    const missingLinkedInItem = document.createElement('div');
+                    missingLinkedInItem.className = 'contact-item';
+                    missingLinkedInItem.innerHTML = '<span class="missing-linkedin-badge">🔗 Missing LinkedIn</span>';
+                    meta.appendChild(missingLinkedInItem);
+                }
+                
+                // Show conference tag if exists
+                if (contact.conference) {
+                    const conferenceTag = document.createElement('div');
+                    conferenceTag.className = 'conference-tag';
+                    conferenceTag.style.marginTop = '8px';
+                    conferenceTag.textContent = `📅 ${contact.conference}`;
+                    meta.appendChild(conferenceTag);
                 }
                 
                 if (contact.imageUrls && contact.imageUrls.length > 0) {
@@ -984,6 +1163,14 @@
                         <div class="detail-value">${contact.companyBusiness}</div>
                     </div>
                     ` : ''}
+                    ${contact.conference ? `
+                    <div class="detail-item">
+                        <div class="detail-label">Conference</div>
+                        <div class="detail-value">
+                            <span class="conference-tag">📅 ${contact.conference}</span>
+                        </div>
+                    </div>
+                    ` : ''}
                     ${contact.linkedin ? `
                     <div class="detail-item">
                         <div class="detail-label">LinkedIn</div>
@@ -1072,6 +1259,7 @@
             document.getElementById('edit-email').value = contact.email || '';
             document.getElementById('edit-note').value = contact.note || '';
             document.getElementById('edit-company-business').value = contact.companyBusiness || '';
+            document.getElementById('edit-conference').value = contact.conference || '';
             document.getElementById('edit-raw').value = contact.rawText || '';
 
             // Load existing images
@@ -1197,6 +1385,7 @@
             const email = document.getElementById('edit-email').value.trim();
             const note = document.getElementById('edit-note').value.trim();
             const companyBusiness = document.getElementById('edit-company-business').value.trim();
+            const conference = document.getElementById('edit-conference').value.trim();
             const rawText = document.getElementById('edit-raw').value.trim();
 
             // Combine name and company if company exists
@@ -1238,21 +1427,22 @@
                 email: email,
                 note: note,
                 companyBusiness: companyBusiness || undefined,
+                conference: conference || undefined,
                 rawText: updatedRawText,
                 imageUrls: allImageUrls, // Always send array, even if empty
             };
 
             try {
                 const { contact } = await apiClient.updateContact(editingContactId, updated);
-                if (contact) {
+                    if (contact) {
                     // Reload contacts to ensure we have the latest data
                     await loadContacts();
-                    renderContacts();
-                }
-                closeEditModal();
+                            renderContacts();
+                    }
+                    closeEditModal();
                 showToast('Contact updated successfully');
             } catch (error) {
-                console.error(error);
+                    console.error(error);
                 showToast(`Update failed: ${error.message}`);
             }
         }
