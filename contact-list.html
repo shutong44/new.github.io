@@ -555,8 +555,20 @@
             </div>
                 <div class="form-group">
                     <label class="form-label">Company</label>
-                    <input type="text" class="form-input" id="edit-company">
-            </div>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" class="form-input" id="edit-company" style="flex: 1;">
+                        <button type="button" class="btn btn-secondary" onclick="searchCompanyOnLinkedIn()" style="padding: 8px 16px; font-size: 13px; white-space: nowrap;" title="Search company on LinkedIn">
+                            🔍 LinkedIn
+                        </button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Company Business</label>
+                    <textarea class="form-textarea" id="edit-company-business" placeholder="What does this company do? (e.g., Software development, Marketing agency, etc.)" rows="2"></textarea>
+                    <div style="font-size: 12px; color: #64748b; margin-top: 4px;">
+                        Describe what this company does. You can fill this manually or use LinkedIn search above.
+                    </div>
+                </div>
                 <div class="form-group">
                     <label class="form-label">LinkedIn</label>
                     <input type="text" class="form-input" id="edit-linkedin" placeholder="https://linkedin.com/in/username">
@@ -902,6 +914,25 @@
             });
         }
 
+        function searchCompanyOnLinkedIn() {
+            const company = document.getElementById('edit-company').value.trim();
+            if (!company) {
+                showToast('Please enter a company name first');
+                return;
+            }
+            const searchUrl = `https://www.linkedin.com/search/results/companies/?keywords=${encodeURIComponent(company)}`;
+            window.open(searchUrl, '_blank');
+        }
+
+        function searchCompanyOnLinkedInForDetail(companyName) {
+            if (!companyName || companyName === '—') {
+                showToast('No company name available');
+                return;
+            }
+            const searchUrl = `https://www.linkedin.com/search/results/companies/?keywords=${encodeURIComponent(companyName)}`;
+            window.open(searchUrl, '_blank');
+        }
+
         function openDetailModal(id) {
             const contact = contacts.find(item => item.id === id);
             if (!contact) {
@@ -912,7 +943,7 @@
             viewingContactId = id;
             const { name, company } = parseNameFields(contact.name);
             const parsedName = name || contact.name || 'Unnamed Contact';
-            const parsedCompany = company || parseCompanyFromRawText(contact.rawText) || '—';
+            const parsedCompany = contact.company || company || parseCompanyFromRawText(contact.rawText) || '—';
 
             // Parse imageUrls
             let imageUrls = contact.imageUrls || [];
@@ -938,8 +969,21 @@
                     </div>
                     <div class="detail-item">
                         <div class="detail-label">Company</div>
-                        <div class="detail-value">${parsedCompany}</div>
+                        <div class="detail-value">
+                            ${parsedCompany}
+                            ${parsedCompany !== '—' ? `
+                            <button type="button" class="btn btn-secondary" onclick="searchCompanyOnLinkedInForDetail('${parsedCompany.replace(/'/g, "\\'")}')" style="margin-left: 8px; padding: 4px 8px; font-size: 12px;">
+                                🔍 LinkedIn
+                            </button>
+                            ` : ''}
+                        </div>
                     </div>
+                    ${contact.companyBusiness ? `
+                    <div class="detail-item">
+                        <div class="detail-label">Company Business</div>
+                        <div class="detail-value">${contact.companyBusiness}</div>
+                    </div>
+                    ` : ''}
                     ${contact.linkedin ? `
                     <div class="detail-item">
                         <div class="detail-label">LinkedIn</div>
@@ -1022,11 +1066,12 @@
             const { name, company } = parseNameFields(contact.name);
             
             document.getElementById('edit-name').value = name || contact.name || '';
-            document.getElementById('edit-company').value = company || parseCompanyFromRawText(contact.rawText) || '';
+            document.getElementById('edit-company').value = contact.company || company || parseCompanyFromRawText(contact.rawText) || '';
             document.getElementById('edit-linkedin').value = contact.linkedin || '';
             document.getElementById('edit-whatsapp').value = contact.whatsapp || contact.phone || '';
             document.getElementById('edit-email').value = contact.email || '';
             document.getElementById('edit-note').value = contact.note || '';
+            document.getElementById('edit-company-business').value = contact.companyBusiness || '';
             document.getElementById('edit-raw').value = contact.rawText || '';
 
             // Load existing images
@@ -1151,6 +1196,7 @@
             const whatsapp = document.getElementById('edit-whatsapp').value.trim();
             const email = document.getElementById('edit-email').value.trim();
             const note = document.getElementById('edit-note').value.trim();
+            const companyBusiness = document.getElementById('edit-company-business').value.trim();
             const rawText = document.getElementById('edit-raw').value.trim();
 
             // Combine name and company if company exists
@@ -1186,10 +1232,12 @@
 
             const updated = {
                 name: fullName,
+                company: company || undefined,
                 linkedin: linkedin,
                 whatsapp: whatsapp,
                 email: email,
                 note: note,
+                companyBusiness: companyBusiness || undefined,
                 rawText: updatedRawText,
                 imageUrls: allImageUrls, // Always send array, even if empty
             };
