@@ -1191,7 +1191,7 @@
                 email: email,
                 note: note,
                 rawText: updatedRawText,
-                imageUrls: allImageUrls.length > 0 ? allImageUrls : undefined,
+                imageUrls: allImageUrls, // Always send array, even if empty
             };
 
             try {
