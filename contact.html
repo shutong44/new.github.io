@@ -632,6 +632,7 @@
             <button class="action-btn" onclick="openEditModal()">✏️ Edit</button>
             <button class="action-btn secondary" onclick="openBusinessCardPage()">📇 Scan</button>
             <button class="action-btn secondary" onclick="openContactsPage()">📒 Contacts</button>
+            <button class="action-btn secondary" onclick="goToConferences()">📅 Conferences</button>
         </div>
     </div>
 
@@ -1201,6 +1202,10 @@
 
         function openContactsPage() {
             window.location.href = 'contact-list.html';
+        }
+
+        function goToConferences() {
+            window.location.href = 'conference.html';
         }
 
         function showToast(message) {

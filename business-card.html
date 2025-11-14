@@ -734,6 +734,7 @@
 
         async function uploadImagesToR2(files) {
             const imageUrls = [];
+            const API_BASE = window.__API_BASE__ || window.location.origin || 'https://cloudflare-worker-google-oauth.wangshutong774.workers.dev';
             
             for (const file of files) {
                 try {
@@ -747,15 +748,20 @@
                     });
                     
                     if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('Upload failed:', errorText);
                         throw new Error(`Upload failed: ${response.statusText}`);
                     }
                     
                     const data = await response.json();
                     if (data.url) {
                         imageUrls.push(data.url);
+                    } else {
+                        console.error('No URL returned from upload:', data);
                     }
                 } catch (error) {
                     console.error('Error uploading image:', error);
+                    showToast(`Failed to upload image: ${error.message}`);
                     // Continue with other images even if one fails
                 }
             }
@@ -814,8 +820,9 @@
                     linkedin,
                     whatsapp,
                     email,
+                    company: company || undefined,
                     rawText: rawText,
-                    imageUrls: imageUrls.length > 0 ? imageUrls : undefined
+                    imageUrls: imageUrls // Always send array, even if empty
                 });
                 
                 statusBox.classList.remove('show');
