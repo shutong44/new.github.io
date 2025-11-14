@@ -1,9 +1,12 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>名片识别导入</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Business Card Scanner</title>
     <style>
         * {
             margin: 0;
@@ -13,33 +16,46 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+            background: #f8fafc;
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
+            padding: 0;
+            color: #1a202c;
         }
 
-        .container {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 520px;
-            width: 100%;
+        .header-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
         }
 
         h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 10px;
             font-size: 28px;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 24px;
         }
 
         .subtitle {
             text-align: center;
-            color: #666;
+            color: #64748b;
             margin-bottom: 30px;
             font-size: 15px;
         }
@@ -52,61 +68,63 @@
             padding: 14px 18px;
             border-radius: 12px;
             margin-bottom: 24px;
-            background: #fff2f2;
-            border: 1px solid rgba(255, 122, 122, 0.2);
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
         }
 
         .auth-banner.logged-in {
-            background: #f2fff5;
-            border-color: rgba(82, 196, 120, 0.3);
+            background: #f0fdf4;
+            border-color: #bbf7d0;
         }
 
         .auth-banner.logged-in .auth-text {
-            color: #3a7f52;
+            color: #166534;
         }
 
         .auth-banner.logged-out .auth-text {
-            color: #d46b08;
+            color: #991b1b;
         }
 
         .auth-text {
             font-size: 14px;
             line-height: 1.4;
-            color: #555;
+            color: #475569;
             flex: 1;
         }
 
         .upload-area {
-            border: 2px dashed #ff7a7a;
-            border-radius: 16px;
-            padding: 30px;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 40px 30px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
             margin-bottom: 25px;
-            background: #fff7f7;
+            background: white;
         }
 
         .upload-area.dragover {
-            background: #ffe3e3;
-            border-color: #ff4d4f;
+            background: #f8fafc;
+            border-color: #667eea;
+            border-style: solid;
         }
 
         .upload-icon {
             font-size: 48px;
-            color: #ff7a7a;
+            color: #64748b;
             margin-bottom: 15px;
         }
 
         .upload-text {
             font-size: 16px;
-            color: #444;
+            font-weight: 600;
+            color: #1a202c;
             margin-bottom: 8px;
         }
 
         .upload-hint {
             font-size: 13px;
-            color: #888;
+            color: #64748b;
         }
 
         .images-preview-container {
@@ -143,23 +161,24 @@
             position: absolute;
             top: 8px;
             right: 8px;
-            width: 24px;
-            height: 24px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
-            background: rgba(255, 77, 79, 0.9);
+            background: rgba(30, 41, 59, 0.9);
             color: white;
             border: none;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 16px;
+            font-size: 18px;
             line-height: 1;
             transition: all 0.2s;
+            font-weight: 600;
         }
 
         .image-preview-item .remove-btn:hover {
-            background: rgba(255, 77, 79, 1);
+            background: rgba(15, 23, 42, 1);
             transform: scale(1.1);
         }
 
@@ -174,12 +193,13 @@
             display: none;
             align-items: center;
             gap: 10px;
-            background: #fff9e6;
-            color: #b38b00;
+            background: #f1f5f9;
+            color: #475569;
             padding: 12px 16px;
             border-radius: 10px;
             margin-bottom: 20px;
             font-size: 14px;
+            border: 1px solid #e2e8f0;
         }
 
         .status.show {
@@ -187,10 +207,11 @@
         }
 
         .form-section {
-            background: #f9fafc;
-            border-radius: 16px;
-            padding: 25px;
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
             margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
         }
 
         .form-group {
@@ -199,25 +220,29 @@
 
         .form-label {
             display: block;
-            font-size: 14px;
-            color: #555;
+            font-size: 13px;
+            color: #475569;
             margin-bottom: 6px;
             font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .form-input {
             width: 100%;
             padding: 12px 14px;
-            border: 2px solid #e6e8f0;
-            border-radius: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
             font-size: 15px;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
+            background: white;
+            color: #1a202c;
         }
 
         .form-input:focus {
             outline: none;
-            border-color: #ff7a7a;
-            box-shadow: 0 0 0 3px rgba(255, 122, 122, 0.1);
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
         .actions {
@@ -238,33 +263,36 @@
         }
 
         .btn-primary {
-            background: #ff7a7a;
+            background: #1a202c;
             color: white;
         }
 
         .btn-primary:hover {
-            background: #ff5c5c;
+            background: #2d3748;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         .btn-secondary {
-            background: #f1f2f6;
-            color: #666;
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
         }
 
         .btn-secondary:hover {
-            background: #e4e6ed;
+            background: #e2e8f0;
         }
 
         .btn-google {
-            background: #ffffff;
-            color: #ff4d4f;
-            border: 1px solid rgba(255, 77, 79, 0.4);
+            background: white;
+            color: #1a202c;
+            border: 1px solid #e2e8f0;
             flex: 0 0 auto;
             padding: 10px 16px;
         }
 
         .btn-google:hover {
-            background: #ffeded;
+            background: #f8fafc;
         }
 
         .btn-google:disabled {
@@ -273,16 +301,18 @@
         }
 
         .results {
-            background: #fff2f2;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
             border-radius: 12px;
             padding: 15px;
             margin-top: 15px;
             display: none;
-            font-size: 14px;
-            color: #555;
+            font-size: 13px;
+            color: #475569;
             white-space: pre-wrap;
             max-height: 180px;
             overflow-y: auto;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
         }
 
         .toast {
@@ -307,19 +337,24 @@
     </style>
 </head>
 <body>
+    <div class="header-section">
+        <div class="header-content">
+            <h1>📇 Business Card Scanner</h1>
+            <button type="button" class="btn btn-google" id="loginButton" disabled>Sign in with Google</button>
+        </div>
+    </div>
+
     <div class="container">
-        <h1>名片识别导入</h1>
-        <p class="subtitle">上传名片照片，自动识别常见联系方式并一键导入</p>
+        <p class="subtitle">Upload business card photos to automatically recognize contact information</p>
 
         <div class="auth-banner" id="authBanner">
-            <div class="auth-text" id="authText">正在检查登录状态...</div>
-            <button type="button" class="btn btn-google" id="loginButton" disabled>使用 Google 登录</button>
+            <div class="auth-text" id="authText">Checking authentication status...</div>
         </div>
 
         <div class="upload-area" id="uploadArea">
             <div class="upload-icon">📷</div>
-            <div class="upload-text">点击或拖拽名片照片到此处</div>
-            <div class="upload-hint">支持 JPG / PNG / HEIC，最多3张，建议清晰正面照片</div>
+            <div class="upload-text">Click or drag business card images here</div>
+            <div class="upload-hint">Supports JPG / PNG / HEIC, up to 3 images, recommended clear front-facing photos</div>
             <input type="file" id="fileInput" accept="image/*" multiple style="display:none;">
         </div>
 
@@ -329,46 +364,46 @@
         </div>
 
         <div class="status" id="status">
-            <span id="statusText">正在识别中，请稍候...</span>
+            <span id="statusText">Processing images, please wait...</span>
         </div>
 
         <div class="results" id="rawResults"></div>
 
         <div class="form-section">
             <div class="form-group">
-                <label class="form-label">姓名</label>
-                <input type="text" class="form-input" id="name-input" placeholder="匹配到的姓名会自动填入">
+                <label class="form-label">Name</label>
+                <input type="text" class="form-input" id="name-input" placeholder="Detected name will be auto-filled">
             </div>
 
             <div class="form-group">
-                <label class="form-label">公司</label>
-                <input type="text" class="form-input" id="company-input" placeholder="匹配到的公司名称会自动填入">
+                <label class="form-label">Company</label>
+                <input type="text" class="form-input" id="company-input" placeholder="Detected company name will be auto-filled">
             </div>
 
             <div class="form-group">
-                <label class="form-label">职业</label>
-                <input type="text" class="form-input" id="title-input" placeholder="匹配到的职位/职业会自动填入">
+                <label class="form-label">Title</label>
+                <input type="text" class="form-input" id="title-input" placeholder="Detected title/position will be auto-filled">
             </div>
 
             <div class="form-group">
                 <label class="form-label">LinkedIn</label>
-                <input type="text" class="form-input" id="linkedin-input" placeholder="例如: https://www.linkedin.com/in/username">
+                <input type="text" class="form-input" id="linkedin-input" placeholder="e.g., https://www.linkedin.com/in/username">
             </div>
 
             <div class="form-group">
-                <label class="form-label">WhatsApp / 电话</label>
-                <input type="text" class="form-input" id="whatsapp-input" placeholder="例如: +44 90000">
+                <label class="form-label">Phone / WhatsApp</label>
+                <input type="text" class="form-input" id="whatsapp-input" placeholder="e.g., +44 90000">
             </div>
 
             <div class="form-group">
                 <label class="form-label">Email</label>
-                <input type="email" class="form-input" id="email-input" placeholder="例如: name@example.com">
+                <input type="email" class="form-input" id="email-input" placeholder="e.g., name@example.com">
             </div>
         </div>
 
         <div class="actions">
-            <button class="btn btn-secondary" onclick="goBack()">返回联系方式</button>
-            <button class="btn btn-primary" onclick="saveContact()">保存到联系方式</button>
+            <button class="btn btn-secondary" onclick="goBack()">Back</button>
+            <button class="btn btn-primary" onclick="saveContact()">Save Contact</button>
         </div>
     </div>
 
@@ -394,7 +429,7 @@
 
         async function ensureAuthenticated() {
             authBanner.classList.remove('logged-in', 'logged-out');
-            authText.textContent = '正在检查登录状态...';
+            authText.textContent = 'Checking authentication status...';
             loginButton.disabled = true;
 
             try {
@@ -411,15 +446,15 @@
                 if (response.ok && data) {
                     latestLoginUrl = undefined;
                     authBanner.classList.add('logged-in');
-                    const displayName = data.user?.name || data.user?.email || '已登录';
-                    authText.textContent = `已登录：${displayName}`;
-                    loginButton.textContent = '切换账号';
+                    const displayName = data.user?.name || data.user?.email || 'Logged in';
+                    authText.textContent = `Signed in as: ${displayName}`;
+                    loginButton.textContent = 'Switch Account';
                     loginButton.disabled = false;
                 } else if (response.status === 401) {
                     latestLoginUrl = data?.loginUrl;
                     authBanner.classList.add('logged-out');
-                    authText.textContent = '未登录：请先使用 Google 登录以保存联系人';
-                    loginButton.textContent = '使用 Google 登录';
+                    authText.textContent = 'Not signed in: Please sign in with Google to save contacts';
+                    loginButton.textContent = 'Sign in with Google';
                     loginButton.disabled = false;
                 } else {
                     throw new Error(data?.error || response.statusText);
@@ -428,8 +463,8 @@
                 console.error('Session check failed', err);
                 latestLoginUrl = undefined;
                 authBanner.classList.add('logged-out');
-                authText.textContent = '无法获取登录状态，请稍后重试';
-                loginButton.textContent = '重新尝试登录';
+                authText.textContent = 'Failed to check authentication status, please try again';
+                loginButton.textContent = 'Retry Login';
                 loginButton.disabled = false;
             }
         }
@@ -475,25 +510,49 @@
             const imageFiles = files.filter(file => file.type.startsWith('image/'));
             
             if (imageFiles.length === 0) {
-                showToast('⚠️ 请上传图片文件');
+                showToast('Please upload image files');
+                return;
+            }
+
+            // Check if already full
+            if (selectedFiles.length >= MAX_IMAGES) {
+                showToast(`Maximum ${MAX_IMAGES} images allowed. Please remove some images first.`);
                 return;
             }
 
             const remainingSlots = MAX_IMAGES - selectedFiles.length;
+            
+            // If selected files exceed remaining slots, only take the first ones
+            const filesToProcess = imageFiles.slice(0, remainingSlots);
+            
             if (imageFiles.length > remainingSlots) {
-                showToast(`⚠️ 最多只能上传${MAX_IMAGES}张图片，已选择${selectedFiles.length}张`);
-                imageFiles.splice(remainingSlots);
+                showToast(`Maximum ${MAX_IMAGES} images allowed. ${selectedFiles.length} already selected, adding first ${remainingSlots} only.`);
             }
 
-            imageFiles.forEach(file => {
-                if (selectedFiles.length < MAX_IMAGES) {
+            let hasNewFiles = false;
+            
+            // Check for duplicates and add new files
+            filesToProcess.forEach(file => {
+                // Check if file already exists (by name and size)
+                const isDuplicate = selectedFiles.some(existing => 
+                    existing.name === file.name && existing.size === file.size
+                );
+                
+                if (!isDuplicate && selectedFiles.length < MAX_IMAGES) {
                     selectedFiles.push(file);
                     addImagePreview(file);
+                    hasNewFiles = true;
+                } else if (isDuplicate) {
+                    showToast(`File "${file.name}" already exists, skipped`);
                 }
             });
 
             updateImagesCount();
-            runOCROnAllImages();
+            
+            // Only re-run OCR if new files were added
+            if (hasNewFiles) {
+                runOCROnAllImages();
+            }
         }
 
         function addImagePreview(file) {
@@ -538,7 +597,7 @@
         }
 
         function updateImagesCount() {
-            imagesCount.textContent = `已选择 ${selectedFiles.length}/${MAX_IMAGES} 张图片`;
+            imagesCount.textContent = `${selectedFiles.length}/${MAX_IMAGES} images selected`;
         }
 
         async function runOCROnAllImages() {
@@ -549,7 +608,7 @@
                 return;
             }
 
-            statusText.textContent = '正在识别中，请稍候...';
+            statusText.textContent = 'Processing images, please wait...';
             statusBox.classList.add('show');
             rawResults.style.display = 'none';
             rawResults.textContent = '';
@@ -560,17 +619,17 @@
             for (let i = 0; i < selectedFiles.length; i++) {
                 const file = selectedFiles[i];
                 try {
-                    statusText.textContent = `正在识别第 ${i + 1}/${selectedFiles.length} 张图片...`;
+                    statusText.textContent = `Processing image ${i + 1}/${selectedFiles.length}...`;
                     const { data } = await Tesseract.recognize(file, 'eng+chi_sim', {
                         logger: m => {
                             if (m.status === 'recognizing text') {
-                                statusText.textContent = `正在识别第 ${i + 1}/${selectedFiles.length} 张... (${Math.round(m.progress * 100)}%)`;
+                                statusText.textContent = `Processing image ${i + 1}/${selectedFiles.length}... (${Math.round(m.progress * 100)}%)`;
                             }
                         }
                     });
 
                     if (data.text) {
-                        allText += (allText ? '\n\n--- 分割线 ---\n\n' : '') + data.text.trim();
+                        allText += (allText ? '\n\n--- Separator ---\n\n' : '') + data.text.trim();
                     }
                     completedCount++;
                 } catch (error) {
@@ -582,10 +641,10 @@
                 rawResults.textContent = allText.trim();
                 rawResults.style.display = 'block';
                 populateFieldsFromText(allText);
-                statusText.textContent = `识别完成 (${completedCount}/${selectedFiles.length}张)，可检查并调整信息`;
+                statusText.textContent = `Recognition complete (${completedCount}/${selectedFiles.length} images). Please review and adjust information.`;
             } else {
-                statusText.textContent = '识别失败，请重试或更换更清晰的图片';
-                showToast('⚠️ 识别失败，请检查网络或图片清晰度');
+                statusText.textContent = 'Recognition failed. Please try again or use clearer images.';
+                showToast('Recognition failed. Please check network connection or image clarity.');
             }
         }
 
@@ -673,6 +732,37 @@
             window.location.href = 'contact.html';
         }
 
+        async function uploadImagesToR2(files) {
+            const imageUrls = [];
+            
+            for (const file of files) {
+                try {
+                    const formData = new FormData();
+                    formData.append('image', file);
+                    
+                    const response = await fetch(`${API_BASE}/api/upload-image`, {
+                        method: 'POST',
+                        credentials: 'include',
+                        body: formData,
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`Upload failed: ${response.statusText}`);
+                    }
+                    
+                    const data = await response.json();
+                    if (data.url) {
+                        imageUrls.push(data.url);
+                    }
+                } catch (error) {
+                    console.error('Error uploading image:', error);
+                    // Continue with other images even if one fails
+                }
+            }
+            
+            return imageUrls;
+        }
+
         async function saveContact() {
             const name = document.getElementById('name-input').value.trim();
             const company = document.getElementById('company-input').value.trim();
@@ -685,35 +775,55 @@
             const fullName = [name, company, title].filter(Boolean).join(' / ').trim();
 
             if (!fullName && !linkedin && !whatsapp && !email) {
-                showToast('⚠️ 请至少填写一项信息再保存');
+                showToast('Please fill in at least one field before saving');
                 return;
             }
 
             try {
+                    // 上传图片到 R2
+                let imageUrls = [];
+                if (selectedFiles.length > 0) {
+                    statusText.textContent = 'Uploading images...';
+                    statusBox.classList.add('show');
+                    try {
+                        imageUrls = await uploadImagesToR2(selectedFiles);
+                        if (imageUrls.length > 0) {
+                            showToast(`Uploaded ${imageUrls.length} image${imageUrls.length !== 1 ? 's' : ''}`);
+                        }
+                    } catch (error) {
+                        console.error('Image upload error:', error);
+                        showToast('Image upload failed, but contact will still be saved');
+                    }
+                }
+
                 // 构建rawText，包含所有识别到的信息
                 const rawTextParts = [];
-                if (name) rawTextParts.push(`姓名: ${name}`);
-                if (company) rawTextParts.push(`公司: ${company}`);
-                if (title) rawTextParts.push(`职业: ${title}`);
+                if (name) rawTextParts.push(`Name: ${name}`);
+                if (company) rawTextParts.push(`Company: ${company}`);
+                if (title) rawTextParts.push(`Title: ${title}`);
                 if (linkedin) rawTextParts.push(`LinkedIn: ${linkedin}`);
                 if (whatsapp) rawTextParts.push(`WhatsApp: ${whatsapp}`);
                 if (email) rawTextParts.push(`Email: ${email}`);
                 if (rawResults.textContent.trim()) {
-                    rawTextParts.push('\n原始识别文本:\n' + rawResults.textContent.trim());
+                    rawTextParts.push('\nRaw OCR Text:\n' + rawResults.textContent.trim());
                 }
                 const rawText = rawTextParts.join('\n');
 
                 await apiClient.createContact({
-                    name: fullName || name || company || title, // 优先使用组合名称
+                    name: fullName || name || company || title,
                     linkedin,
                     whatsapp,
                     email,
-                    rawText: rawText
+                    rawText: rawText,
+                    imageUrls: imageUrls.length > 0 ? imageUrls : undefined
                 });
-                showToast('✓ 已保存到通讯录，可在联系人列表查看');
+                
+                statusBox.classList.remove('show');
+                showToast('Contact saved successfully. View in contact list.');
             } catch (error) {
                 console.error(error);
-                showToast(`⚠️ 保存失败：${error.message}`);
+                statusBox.classList.remove('show');
+                showToast(`Save failed: ${error.message}`);
             }
         }
 

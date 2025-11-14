@@ -1,9 +1,12 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>名片联系人列表</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Contact Directory</title>
     <style>
         * {
             margin: 0;
@@ -13,181 +16,242 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+            background: #f8fafc;
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
+            padding: 0;
+            color: #1a202c;
         }
 
-        .container {
-            background: white;
-            border-radius: 22px;
-            padding: 35px;
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);
-            max-width: 920px;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
+        .header-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
-        .header {
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 16px;
         }
 
         h1 {
-            font-size: 30px;
-            color: #1f2937;
+            font-size: 28px;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .badge {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 8px;
         }
 
         .actions {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             flex-wrap: wrap;
         }
 
         .btn {
             padding: 10px 18px;
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
         }
 
         .btn-primary {
-            background: #2193b0;
-            color: white;
+            background: white;
+            color: #667eea;
         }
 
         .btn-primary:hover {
-            background: #197a92;
+            background: #f7fafc;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         .btn-secondary {
-            background: #eef2f7;
-            color: #4b5563;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
         .btn-secondary:hover {
-            background: #e2e7f0;
+            background: rgba(255, 255, 255, 0.3);
         }
 
-        .search-bar {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .search-section {
+            margin-bottom: 24px;
         }
 
         .search-input {
-            flex: 1;
-            min-width: 240px;
-            padding: 12px 15px;
-            border: 2px solid #e5e7f2;
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #e2e8f0;
             border-radius: 12px;
             font-size: 15px;
-            transition: all 0.3s ease;
+            transition: all 0.2s;
+            background: white;
         }
 
         .search-input:focus {
             outline: none;
-            border-color: #2193b0;
-            box-shadow: 0 0 0 3px rgba(33, 147, 176, 0.1);
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
-        .contacts-wrapper {
-            border: 1px solid #e5e7f2;
-            border-radius: 18px;
-            overflow: hidden;
-            background: #f8fbff;
+        .contacts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        @media (max-width: 768px) {
+            .contacts-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
-        thead {
-            background: #ecf6fb;
+        .contact-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s;
+            cursor: pointer;
+            border: 1px solid #e2e8f0;
+            position: relative;
         }
 
-        th, td {
-            text-align: left;
-            padding: 16px 18px;
+        .contact-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .contact-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .contact-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a202c;
+            margin-bottom: 4px;
+        }
+
+        .contact-company {
             font-size: 14px;
+            color: #64748b;
+            margin-top: 4px;
         }
 
-        th {
-            color: #256072;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        .contact-number {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: #e6f2ff;
+            color: #2563eb;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
             font-weight: 600;
         }
 
-        tbody tr {
-            border-top: 1px solid #e5e7f2;
+        .contact-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            font-size: 14px;
         }
 
-        tbody tr:hover {
-            background: #e6f7ff;
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #475569;
+        }
+
+        .contact-item a {
+            color: #2563eb;
+            text-decoration: none;
+            word-break: break-all;
+        }
+
+        .contact-item a:hover {
+            text-decoration: underline;
+        }
+
+        .contact-icon {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .contact-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .btn-edit {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .btn-delete {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .btn-delete:hover {
+            background: #fecaca;
         }
 
         .empty-state {
-            padding: 40px;
             text-align: center;
-            color: #6b7280;
+            padding: 60px 20px;
+            color: #64748b;
         }
 
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 4px 10px;
-            border-radius: 999px;
-            font-size: 12px;
-            font-weight: 500;
-            background: #e9f7fb;
-            color: #21799d;
+        .empty-state h2 {
+            font-size: 20px;
+            margin-bottom: 8px;
+            color: #1a202c;
         }
 
-        .toast {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #333;
-            color: white;
-            padding: 15px 25px;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            opacity: 0;
-            transform: translateY(-20px);
-            transition: all 0.3s ease;
-            z-index: 1000;
-        }
-
-        .toast.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        @media (max-width: 720px) {
-            .container {
-                padding: 24px;
-            }
-
-            table {
-                display: block;
-                overflow-x: auto;
-                white-space: nowrap;
-            }
-        }
-
+        /* Detail Modal */
         .modal {
             display: none;
             position: fixed;
@@ -195,197 +259,293 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.55);
-            z-index: 1500;
-            justify-content: center;
-            align-items: center;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            overflow-y: auto;
             padding: 20px;
         }
 
         .modal.show {
             display: flex;
+            align-items: flex-start;
+            justify-content: center;
         }
 
         .modal-content {
             background: white;
-            border-radius: 18px;
-            padding: 28px;
+            border-radius: 16px;
+            padding: 24px;
             width: 100%;
-            max-width: 480px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+            max-width: 600px;
+            margin: 40px auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #64748b;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .close-btn:hover {
+            background: #f1f5f9;
+            color: #1a202c;
         }
 
         .modal-title {
-            font-size: 22px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            color: #1f2937;
-            text-align: center;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: #1a202c;
         }
 
-        .modal-form-group {
+        .detail-section {
+            margin-bottom: 24px;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #64748b;
+            min-width: 100px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .detail-value {
+            flex: 1;
+            font-size: 14px;
+            color: #1a202c;
+            word-break: break-word;
+        }
+
+        .detail-value a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        .detail-value a:hover {
+            text-decoration: underline;
+        }
+
+        .form-group {
             margin-bottom: 16px;
         }
 
-        .modal-label {
+        .form-label {
             display: block;
             font-size: 13px;
-            color: #4b5563;
-            margin-bottom: 6px;
             font-weight: 500;
+            color: #475569;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .modal-input, .modal-textarea {
+        .form-input, .form-textarea {
             width: 100%;
-            padding: 12px 14px;
-            border: 2px solid #e5e7f2;
-            border-radius: 10px;
+            padding: 10px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
             font-size: 14px;
-            transition: all 0.3s ease;
+            transition: all 0.2s;
+            font-family: inherit;
         }
 
-        .modal-textarea {
+        .form-textarea {
             resize: vertical;
             min-height: 100px;
         }
 
-        .modal-input:focus, .modal-textarea:focus {
+        .form-input:focus, .form-textarea:focus {
             outline: none;
-            border-color: #2193b0;
-            box-shadow: 0 0 0 3px rgba(33, 147, 176, 0.12);
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
-        .modal-actions {
+        .form-actions {
             display: flex;
             gap: 12px;
-            margin-top: 10px;
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
         }
 
-        .tag {
-            display: inline-flex;
-            align-items: center;
-            padding: 4px 8px;
-            border-radius: 999px;
-            font-size: 11px;
-            background: #e8f3ff;
-            color: #2563eb;
-            margin-left: 6px;
-        }
-
-        .company-cell {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .company-name {
+        .form-actions .btn {
             flex: 1;
         }
 
-        .company-search-btn {
-            padding: 4px 10px;
-            border: 1px solid #2193b0;
-            border-radius: 6px;
-            background: white;
-            color: #2193b0;
-            font-size: 11px;
-            cursor: pointer;
-            transition: all 0.2s;
-            white-space: nowrap;
-        }
-
-        .company-search-btn:hover {
-            background: #2193b0;
-            color: white;
-        }
-
-        .company-info {
+        .timestamp {
             font-size: 12px;
-            color: #6b7280;
-            margin-top: 2px;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #1a202c;
+            color: white;
+            padding: 14px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+            z-index: 2000;
+            max-width: 300px;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .contacts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header-content {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .actions {
+                width: 100%;
+                justify-content: stretch;
+            }
+
+            .actions .btn {
+                flex: 1;
+            }
+
+            .modal-content {
+                margin: 20px 0;
+                border-radius: 16px 16px 0 0;
+            }
+
+            .container {
+                padding: 12px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
+    <div class="header-section">
+        <div class="header-content">
             <div>
-                <h1>名片联系人列表</h1>
-                <div class="badge" id="contactsCount">0 位联系人</div>
+                <h1>📇 Contact Directory</h1>
+                <div class="badge" id="contactsCount">0 contacts</div>
             </div>
             <div class="actions">
-                <button class="btn btn-secondary" onclick="goToContact()">返回联系方式</button>
-                <button class="btn btn-secondary" onclick="goToBusinessCard()">继续识别名片</button>
-                <button class="btn btn-primary" onclick="exportContacts()">导出 CSV</button>
+                <button class="btn btn-secondary" onclick="goToContact()">Back</button>
+                <button class="btn btn-secondary" onclick="goToBusinessCard()">Scan Card</button>
+                <button class="btn btn-secondary" onclick="document.getElementById('csvUploadInput').click()">Import CSV</button>
+                <button class="btn btn-primary" onclick="exportContacts()">Export CSV</button>
+                <input type="file" id="csvUploadInput" accept=".csv" style="display: none;" onchange="handleCSVUpload(event)">
+            </div>
             </div>
         </div>
 
-        <div class="search-bar">
-            <input type="text" class="search-input" id="searchInput" placeholder="搜索姓名、公司、邮箱或电话..." oninput="renderContacts()">
-            <button class="btn btn-secondary" onclick="clearContacts()">清空全部联系人</button>
+    <div class="container">
+        <div class="search-section">
+            <input type="text" class="search-input" id="searchInput" placeholder="Search by name, company, email, phone, or note..." oninput="renderContacts()">
         </div>
 
-        <div class="contacts-wrapper" id="contactsWrapper">
-            <div class="empty-state" id="emptyState">
-                目前还没有保存的名片联系人。请返回名片识别页上传名片后再试。
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <h2>No contacts yet</h2>
+            <p>Start by scanning a business card or importing contacts from CSV.</p>
             </div>
-            <table id="contactsTable" style="display: none;">
-                <thead>
-                    <tr>
-                        <th>姓名</th>
-                        <th>公司</th>
-                        <th>LinkedIn</th>
-                        <th>电话 / WhatsApp</th>
-                        <th>Email</th>
-                        <th>保存时间</th>
-                        <th>操作</th>
-                    </tr>
-                </thead>
-                <tbody id="contactsBody"></tbody>
-            </table>
+
+        <div id="contactsGrid" class="contacts-grid"></div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div class="modal" id="detailModal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeDetailModal()">×</button>
+            <h2 class="modal-title" id="detailName"></h2>
+            <div id="detailContent"></div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeEditModal()">×</button>
+            <h2 class="modal-title">Edit Contact</h2>
+            <form onsubmit="saveEditedContact(event)">
+                <div class="form-group">
+                    <label class="form-label">Name</label>
+                    <input type="text" class="form-input" id="edit-name" required>
+            </div>
+                <div class="form-group">
+                    <label class="form-label">Company</label>
+                    <input type="text" class="form-input" id="edit-company">
+            </div>
+                <div class="form-group">
+                    <label class="form-label">LinkedIn</label>
+                    <input type="text" class="form-input" id="edit-linkedin" placeholder="https://linkedin.com/in/username">
+            </div>
+                <div class="form-group">
+                    <label class="form-label">Phone / WhatsApp</label>
+                    <input type="text" class="form-input" id="edit-whatsapp" placeholder="+44 90000">
+            </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" id="edit-email" placeholder="name@example.com">
+            </div>
+                <div class="form-group">
+                    <label class="form-label">Note</label>
+                    <textarea class="form-textarea" id="edit-note" placeholder="Add personal notes about this contact..."></textarea>
+            </div>
+                <div class="form-group">
+                    <label class="form-label">Raw Text <span style="color: #94a3b8; font-size: 11px; font-weight: normal; text-transform: none;">(private)</span></label>
+                    <textarea class="form-textarea" id="edit-raw"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
         </div>
     </div>
 
     <div class="toast" id="toast"></div>
 
-    <div class="modal" id="editModal">
-        <div class="modal-content">
-            <div class="modal-title">编辑联系人</div>
-            <div class="modal-form-group">
-                <label class="modal-label">姓名 / 公司</label>
-                <input type="text" class="modal-input" id="edit-name">
-            </div>
-            <div class="modal-form-group">
-                <label class="modal-label">LinkedIn</label>
-                <input type="text" class="modal-input" id="edit-linkedin">
-            </div>
-            <div class="modal-form-group">
-                <label class="modal-label">电话 / WhatsApp</label>
-                <input type="text" class="modal-input" id="edit-whatsapp">
-            </div>
-            <div class="modal-form-group">
-                <label class="modal-label">Email</label>
-                <input type="email" class="modal-input" id="edit-email">
-            </div>
-            <div class="modal-form-group">
-                <label class="modal-label">识别原文<span class="tag">仅自己可见</span></label>
-                <textarea class="modal-textarea" id="edit-raw"></textarea>
-            </div>
-            <div class="modal-actions">
-                <button class="btn btn-secondary" style="flex:1;" onclick="closeEditModal()">取消</button>
-                <button class="btn btn-primary" style="flex:1;" onclick="saveEditedContact()">保存</button>
-            </div>
-        </div>
-    </div>
-
     <script src="api-client.js"></script>
     <script>
         let contacts = [];
         let editingContactId = null;
-
-        window.onload = function() {
-            init();
-        };
+        let viewingContactId = null;
 
         async function init() {
             try {
@@ -394,6 +554,7 @@
                 renderContacts();
             } catch (error) {
                 console.warn('Failed to initialise contacts', error);
+                showToast('Failed to load contacts');
             }
         }
 
@@ -410,48 +571,34 @@
             contacts = Array.isArray(response.contacts) ? response.contacts : [];
         }
 
-        // 从rawText中解析公司信息
         function parseCompanyFromRawText(rawText) {
             if (!rawText) return null;
-            
-            // 尝试从格式化的rawText中提取：公司: xxx
-            const companyMatch = rawText.match(/公司[：:]\s*(.+?)(?:\n|$)/i);
-            if (companyMatch && companyMatch[1]) {
-                return companyMatch[1].trim();
+            const companyMatch = rawText.match(/公司[：:]\s*(.+?)(?:\n|$)|Company[：:]\s*(.+?)(?:\n|$)/i);
+            if (companyMatch && (companyMatch[1] || companyMatch[2])) {
+                return (companyMatch[1] || companyMatch[2]).trim();
             }
-            
-            // 如果没有格式化，尝试从name字段中提取（格式可能是"姓名 / 公司 / 职业"）
             return null;
         }
 
-        // 从name字段中解析姓名、公司、职业
         function parseNameFields(name) {
             if (!name) return { name: null, company: null, title: null };
-            
             const parts = name.split(' / ').map(p => p.trim()).filter(p => p);
-            
-            // 通常格式：姓名 / 公司 / 职业 或 姓名 / 公司
             let parsedName = parts[0] || null;
             let parsedCompany = null;
             let parsedTitle = null;
             
             if (parts.length >= 2) {
-                // 判断第二部分是公司还是职业
-                const companyKeywords = ['公司', '有限公司', '股份有限公司', 'corporation', 'corp', 'ltd', 'inc', 'co.', 'company'];
+                const companyKeywords = ['company', 'corp', 'ltd', 'inc', 'co.', '公司', '有限公司'];
                 const isCompany = companyKeywords.some(keyword => 
                     parts[1].toLowerCase().includes(keyword.toLowerCase())
                 );
                 
                 if (isCompany) {
                     parsedCompany = parts[1];
-                    if (parts.length >= 3) {
-                        parsedTitle = parts[2];
-                    }
+                    if (parts.length >= 3) parsedTitle = parts[2];
                 } else {
                     parsedTitle = parts[1];
-                    if (parts.length >= 3) {
-                        parsedCompany = parts[2];
-                    }
+                    if (parts.length >= 3) parsedCompany = parts[2];
                 }
             }
             
@@ -461,12 +608,10 @@
         function renderContacts() {
             const search = document.getElementById('searchInput').value.trim().toLowerCase();
             
-            // 处理联系人数据，解析公司信息
             const processedContacts = contacts.map(contact => {
                 let company = contact.company || null;
                 let { name, company: parsedCompany, title } = parseNameFields(contact.name);
                 
-                // 优先使用rawText中的公司信息
                 const rawTextCompany = parseCompanyFromRawText(contact.rawText);
                 if (rawTextCompany) {
                     company = rawTextCompany;
@@ -474,23 +619,25 @@
                     company = parsedCompany;
                 }
                 
-                // 如果没有解析出公司，但name包含公司信息，尝试从name中提取
-                if (!company && contact.name) {
-                    const companyKeywords = ['公司', '有限公司', '股份有限公司', 'corporation', 'corp', 'ltd', 'inc'];
-                    const nameParts = contact.name.split(/[\/|,，]/).map(p => p.trim());
-                    const companyPart = nameParts.find(part => 
-                        companyKeywords.some(keyword => part.toLowerCase().includes(keyword.toLowerCase()))
-                    );
-                    if (companyPart) {
-                        company = companyPart;
+                // Parse imageUrls if it's a string (JSON)
+                let imageUrls = contact.imageUrls || [];
+                if (typeof imageUrls === 'string') {
+                    try {
+                        imageUrls = JSON.parse(imageUrls);
+                    } catch (e) {
+                        imageUrls = [];
                     }
+                }
+                if (!Array.isArray(imageUrls)) {
+                    imageUrls = [];
                 }
                 
                 return {
                     ...contact,
-                    parsedName: name || contact.name || '未命名联系人',
+                    parsedName: name || contact.name || 'Unnamed Contact',
                     company: company,
-                    title: title
+                    title: title,
+                    imageUrls: imageUrls
                 };
             });
             
@@ -505,238 +652,324 @@
                         contact.whatsapp,
                         contact.phone,
                         contact.email,
+                        contact.note,
                         contact.rawText,
-                    ]
-                        .filter(Boolean)
-                        .join(' ')
-                        .toLowerCase();
+                    ].filter(Boolean).join(' ').toLowerCase();
                     return source.includes(search);
                 })
                 .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 
             const countEl = document.getElementById('contactsCount');
-            countEl.textContent = `${filtered.length} 位联系人`;
+            countEl.textContent = `${filtered.length} contact${filtered.length !== 1 ? 's' : ''}`;
 
             const emptyState = document.getElementById('emptyState');
-            const table = document.getElementById('contactsTable');
-            const tbody = document.getElementById('contactsBody');
+            const grid = document.getElementById('contactsGrid');
 
-            tbody.innerHTML = '';
+            grid.innerHTML = '';
 
             if (!filtered.length) {
                 emptyState.style.display = 'block';
-                table.style.display = 'none';
                 return;
             }
 
             emptyState.style.display = 'none';
-            table.style.display = 'table';
 
-            filtered.forEach(contact => {
-                const row = document.createElement('tr');
-
-                const cell = (value, fallback = '—') => {
-                    const td = document.createElement('td');
-                    td.textContent = value || fallback;
-                    return td;
+            filtered.forEach((contact, index) => {
+                const card = document.createElement('div');
+                card.className = 'contact-card';
+                
+                // Add contact number badge
+                const numberBadge = document.createElement('div');
+                numberBadge.className = 'contact-number';
+                numberBadge.textContent = `#${index + 1}`;
+                card.appendChild(numberBadge);
+                
+                const header = document.createElement('div');
+                header.className = 'contact-header';
+                
+                const info = document.createElement('div');
+                const nameEl = document.createElement('div');
+                nameEl.className = 'contact-name';
+                nameEl.textContent = contact.parsedName || contact.name || 'Unnamed Contact';
+                nameEl.onclick = (e) => {
+                    e.stopPropagation();
+                    openDetailModal(contact.id);
                 };
-
-                // 姓名列
-                row.appendChild(cell(contact.parsedName || contact.name || '未命名联系人'));
-
-                // 公司列（带查找按钮）
-                const companyTd = document.createElement('td');
-                const companyCell = document.createElement('div');
-                companyCell.className = 'company-cell';
+                nameEl.style.cursor = 'pointer';
                 
+                const companyEl = document.createElement('div');
+                companyEl.className = 'contact-company';
                 if (contact.company) {
-                    const companyName = document.createElement('div');
-                    companyName.className = 'company-name';
-                    companyName.textContent = contact.company;
-                    companyCell.appendChild(companyName);
-                    
-                    const searchBtn = document.createElement('button');
-                    searchBtn.className = 'company-search-btn';
-                    searchBtn.textContent = '🔍 查找';
-                    searchBtn.title = '在LinkedIn上查找公司信息';
-                    searchBtn.onclick = (e) => {
+                    companyEl.textContent = contact.company;
+                    companyEl.onclick = (e) => {
                         e.stopPropagation();
-                        searchCompanyOnLinkedIn(contact.company);
+                        openDetailModal(contact.id);
                     };
-                    companyCell.appendChild(searchBtn);
+                    companyEl.style.cursor = 'pointer';
+                    companyEl.style.color = '#2563eb';
                 } else {
-                    companyCell.textContent = '—';
+                    companyEl.textContent = '—';
                 }
                 
-                companyTd.appendChild(companyCell);
-                row.appendChild(companyTd);
-
-                // LinkedIn列
-                const linkedinTd = document.createElement('td');
-                if (contact.linkedin) {
-                    const link = document.createElement('a');
-                    link.href = contact.linkedin.startsWith('http')
-                        ? contact.linkedin
-                        : `https://${contact.linkedin}`;
-                    link.textContent = contact.linkedin.replace(/^https?:\/\//i, '');
-                    link.target = '_blank';
-                    link.rel = 'noopener noreferrer';
-                    link.style.color = '#1b7ea7';
-                    link.style.textDecoration = 'none';
-                    link.style.fontWeight = '500';
-                    linkedinTd.appendChild(link);
+                info.appendChild(nameEl);
+                info.appendChild(companyEl);
+                header.appendChild(info);
+                card.appendChild(header);
+                
+                const meta = document.createElement('div');
+                meta.className = 'contact-meta';
+                
+                // Create helper function for contact items
+                function createContactItem(icon, text, link = null, onClick = null) {
+                    const item = document.createElement('div');
+                    item.className = 'contact-item';
+                    
+                    const iconEl = document.createElement('span');
+                    iconEl.textContent = icon;
+                    iconEl.className = 'contact-icon';
+                    
+                    const textEl = document.createElement('span');
+                    
+                    if (link) {
+                        const linkEl = document.createElement('a');
+                        linkEl.href = link;
+                        linkEl.target = '_blank';
+                        linkEl.textContent = text;
+                        textEl.appendChild(linkEl);
+                    } else if (onClick) {
+                        textEl.textContent = text;
+                        textEl.style.cursor = 'pointer';
+                        textEl.style.color = '#2563eb';
+                        textEl.onclick = onClick;
                 } else {
-                    linkedinTd.textContent = '—';
+                        textEl.textContent = text;
+                        textEl.style.flex = '1';
+                        textEl.style.wordBreak = 'break-all';
+                    }
+                    
+                    item.appendChild(iconEl);
+                    item.appendChild(textEl);
+                    
+                    return item;
                 }
-                row.appendChild(linkedinTd);
-
-                row.appendChild(cell(contact.whatsapp || contact.phone));
-                row.appendChild(cell(contact.email));
-                row.appendChild(
-                    cell(contact.createdAt ? new Date(contact.createdAt).toLocaleString() : '—'),
-                );
-
-                const actionsTd = document.createElement('td');
-                actionsTd.style.display = 'flex';
-                actionsTd.style.gap = '8px';
+                
+                if (contact.email) {
+                    meta.appendChild(createContactItem('📧', contact.email, `mailto:${contact.email}`));
+                }
+                
+                if (contact.whatsapp || contact.phone) {
+                    const phone = contact.whatsapp || contact.phone;
+                    const cleanPhone = phone.replace(/[^0-9]/g, '');
+                    meta.appendChild(createContactItem('📱', phone, `https://wa.me/${cleanPhone}`, null));
+                }
+                
+                if (contact.linkedin) {
+                    const linkedinItem = createContactItem('💼', contact.linkedin.replace(/^https?:\/\//i, ''), 
+                        contact.linkedin.startsWith('http') ? contact.linkedin : `https://${contact.linkedin}`, null);
+                    linkedinItem.querySelector('.contact-item a').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        window.open(linkedinItem.querySelector('a').href, '_blank');
+                    });
+                    meta.appendChild(linkedinItem);
+                }
+                
+                if (contact.imageUrls && contact.imageUrls.length > 0) {
+                    const imagesItem = document.createElement('div');
+                    imagesItem.className = 'contact-item';
+                    imagesItem.style.cursor = 'pointer';
+                    imagesItem.onclick = (e) => {
+                        e.stopPropagation();
+                        openDetailModal(contact.id);
+                    };
+                    
+                    const iconEl = document.createElement('span');
+                    iconEl.textContent = '🖼️';
+                    iconEl.className = 'contact-icon';
+                    
+                    const textEl = document.createElement('span');
+                    textEl.textContent = `${contact.imageUrls.length} image${contact.imageUrls.length !== 1 ? 's' : ''}`;
+                    textEl.style.flex = '1';
+                    textEl.style.fontSize = '12px';
+                    textEl.style.color = '#64748b';
+                    
+                    imagesItem.appendChild(iconEl);
+                    imagesItem.appendChild(textEl);
+                    meta.appendChild(imagesItem);
+                }
+                
+                if (contact.createdAt) {
+                    const timeItem = document.createElement('div');
+                    timeItem.className = 'timestamp';
+                    timeItem.textContent = formatDate(contact.createdAt);
+                    meta.appendChild(timeItem);
+                }
+                
+                card.appendChild(meta);
+                
+                const actions = document.createElement('div');
+                actions.className = 'contact-actions';
 
                 const editBtn = document.createElement('button');
-                editBtn.textContent = '编辑';
-                editBtn.className = 'btn btn-secondary';
-                editBtn.style.padding = '6px 12px';
-                editBtn.style.fontSize = '13px';
-                editBtn.style.borderRadius = '8px';
-                editBtn.onclick = () => openEditModal(contact.id);
+                editBtn.className = 'btn btn-edit btn-sm';
+                editBtn.textContent = 'Edit';
+                editBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    openEditModal(contact.id);
+                };
 
                 const deleteBtn = document.createElement('button');
-                deleteBtn.textContent = '删除';
-                deleteBtn.className = 'btn btn-secondary';
-                deleteBtn.style.background = '#fee2e2';
-                deleteBtn.style.color = '#b91c1c';
-                deleteBtn.style.padding = '6px 12px';
-                deleteBtn.style.fontSize = '13px';
-                deleteBtn.style.borderRadius = '8px';
-                deleteBtn.onclick = () => deleteContact(contact.id);
-
-                actionsTd.appendChild(editBtn);
-                actionsTd.appendChild(deleteBtn);
-                row.appendChild(actionsTd);
-
-                tbody.appendChild(row);
-            });
-        }
-
-        // 在LinkedIn上搜索公司信息
-        function searchCompanyOnLinkedIn(companyName) {
-            if (!companyName) {
-                showToast('⚠️ 公司名称为空');
-                return;
-            }
-            
-            // 清理公司名称，移除常见的公司后缀以获取更准确的搜索结果
-            let searchTerm = companyName.trim();
-            
-            // LinkedIn搜索URL
-            const encodedCompany = encodeURIComponent(searchTerm);
-            const linkedInSearchUrl = `https://www.linkedin.com/search/results/companies/?keywords=${encodedCompany}`;
-            
-            // 打开新标签页
-            window.open(linkedInSearchUrl, '_blank');
-            showToast(`✓ 正在LinkedIn上搜索 "${searchTerm}"`);
-        }
-
-        async function clearContacts() {
-            if (!confirm('确认要清空所有名片联系人吗？此操作无法撤销。')) {
-                return;
-            }
-            try {
-                for (const contact of contacts) {
-                    await apiClient.deleteContact(contact.id);
-                }
-                await loadContacts();
-                renderContacts();
-                showToast('✓ 已清空联系人');
-            } catch (error) {
-                console.error(error);
-                showToast(`⚠️ 清空失败：${error.message}`);
-            }
-        }
-
-        async function exportContacts() {
-            await loadContacts();
-            if (!contacts.length) {
-                showToast('⚠️ 没有可导出的联系人');
-                return;
-            }
-
-            // 处理联系人数据以导出
-            const processedContacts = contacts.map(contact => {
-                const rawTextCompany = parseCompanyFromRawText(contact.rawText);
-                const { name, company: parsedCompany } = parseNameFields(contact.name);
-                const company = contact.company || rawTextCompany || parsedCompany || '';
-                
-                return {
-                    name: name || contact.name || '',
-                    company: company,
-                    linkedin: contact.linkedin || '',
-                    whatsapp: contact.whatsapp || contact.phone || '',
-                    email: contact.email || '',
-                    createdAt: contact.createdAt ? new Date(contact.createdAt).toLocaleString() : '',
+                deleteBtn.className = 'btn btn-delete btn-sm';
+                deleteBtn.textContent = 'Delete';
+                deleteBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    deleteContact(contact.id);
                 };
+                
+                actions.appendChild(editBtn);
+                actions.appendChild(deleteBtn);
+                card.appendChild(actions);
+                
+                grid.appendChild(card);
             });
-
-            const headers = ['姓名', '公司', 'LinkedIn', '电话/WhatsApp', 'Email', '保存时间'];
-            const rows = processedContacts.map(contact => [
-                contact.name,
-                contact.company,
-                contact.linkedin,
-                contact.whatsapp,
-                contact.email,
-                contact.createdAt,
-            ]);
-
-            const csvContent = [headers, ...rows]
-                .map(row =>
-                    row.map(value => `"${(value || '').replace(/"/g, '""')}"`).join(','),
-                )
-                .join('\r\n');
-
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `名片联系人_${Date.now()}.csv`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-
-            showToast('✓ CSV 导出完成');
         }
 
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.classList.add('show');
+        function formatDate(timestamp) {
+            if (!timestamp) return '';
+            const date = new Date(timestamp * 1000);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
 
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
+        function openDetailModal(id) {
+            const contact = contacts.find(item => item.id === id);
+            if (!contact) {
+                showToast('Contact not found');
+                return;
+            }
+
+            viewingContactId = id;
+            const { name, company } = parseNameFields(contact.name);
+            const parsedName = name || contact.name || 'Unnamed Contact';
+            const parsedCompany = company || parseCompanyFromRawText(contact.rawText) || '—';
+
+            // Parse imageUrls
+            let imageUrls = contact.imageUrls || [];
+            if (typeof imageUrls === 'string') {
+                try {
+                    imageUrls = JSON.parse(imageUrls);
+                } catch (e) {
+                    imageUrls = [];
+                }
+            }
+            if (!Array.isArray(imageUrls)) {
+                imageUrls = [];
+            }
+
+            document.getElementById('detailName').textContent = parsedName;
+            
+            const content = document.getElementById('detailContent');
+            content.innerHTML = `
+                <div class="detail-section">
+                    <div class="detail-item">
+                        <div class="detail-label">Name</div>
+                        <div class="detail-value">${parsedName}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Company</div>
+                        <div class="detail-value">${parsedCompany}</div>
+                    </div>
+                    ${contact.linkedin ? `
+                    <div class="detail-item">
+                        <div class="detail-label">LinkedIn</div>
+                        <div class="detail-value">
+                            <a href="${contact.linkedin.startsWith('http') ? contact.linkedin : 'https://' + contact.linkedin}" target="_blank">
+                                ${contact.linkedin.replace(/^https?:\/\//i, '')}
+                            </a>
+                        </div>
+                    </div>
+                    ` : ''}
+                    ${contact.email ? `
+                    <div class="detail-item">
+                        <div class="detail-label">Email</div>
+                        <div class="detail-value">
+                            <a href="mailto:${contact.email}">${contact.email}</a>
+                        </div>
+                    </div>
+                    ` : ''}
+                    ${contact.whatsapp || contact.phone ? `
+                    <div class="detail-item">
+                        <div class="detail-label">Phone / WhatsApp</div>
+                        <div class="detail-value">
+                            <a href="https://wa.me/${(contact.whatsapp || contact.phone).replace(/[^0-9]/g, '')}" target="_blank">
+                                ${contact.whatsapp || contact.phone}
+                            </a>
+                        </div>
+                    </div>
+                    ` : ''}
+                    ${contact.note ? `
+                    <div class="detail-item">
+                        <div class="detail-label">Note</div>
+                        <div class="detail-value" style="white-space: pre-wrap;">${contact.note}</div>
+                    </div>
+                    ` : ''}
+                    ${contact.createdAt ? `
+                    <div class="detail-item">
+                        <div class="detail-label">Added</div>
+                        <div class="detail-value">${formatDate(contact.createdAt)}</div>
+                    </div>
+                    ` : ''}
+                    ${imageUrls.length > 0 ? `
+                    <div class="detail-item" style="flex-direction: column; align-items: flex-start;">
+                        <div class="detail-label" style="margin-bottom: 12px;">Images</div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; width: 100%;">
+                            ${imageUrls.map((url, idx) => `
+                                <div style="position: relative; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0;">
+                                    <img src="${url}" alt="Image ${idx + 1}" style="width: 100%; height: 150px; object-fit: cover; display: block;" 
+                                         onerror="this.style.display='none'">
+                                    <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.7); padding: 8px; display: flex; gap: 4px;">
+                                        <a href="${url}?download=true" class="btn btn-sm" style="flex: 1; padding: 4px; font-size: 11px; background: #2563eb; color: white; text-decoration: none; text-align: center; border-radius: 4px;">Download</a>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-secondary" onclick="closeDetailModal(); openEditModal('${contact.id}')">Edit</button>
+                    <button class="btn btn-primary" onclick="closeDetailModal()">Close</button>
+                </div>
+            `;
+
+            document.getElementById('detailModal').classList.add('show');
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detailModal').classList.remove('show');
+            viewingContactId = null;
         }
 
         function openEditModal(id) {
             const contact = contacts.find(item => item.id === id);
             if (!contact) {
-                showToast('⚠️ 未找到该联系人');
+                showToast('Contact not found');
                 return;
             }
 
             editingContactId = id;
-            document.getElementById('edit-name').value = contact.name || '';
+            const { name, company } = parseNameFields(contact.name);
+            
+            document.getElementById('edit-name').value = name || contact.name || '';
+            document.getElementById('edit-company').value = company || parseCompanyFromRawText(contact.rawText) || '';
             document.getElementById('edit-linkedin').value = contact.linkedin || '';
-            document.getElementById('edit-whatsapp').value =
-                contact.whatsapp || contact.phone || '';
+            document.getElementById('edit-whatsapp').value = contact.whatsapp || contact.phone || '';
             document.getElementById('edit-email').value = contact.email || '';
+            document.getElementById('edit-note').value = contact.note || '';
             document.getElementById('edit-raw').value = contact.rawText || '';
 
             document.getElementById('editModal').classList.add('show');
@@ -747,41 +980,63 @@
             editingContactId = null;
         }
 
-        function saveEditedContact() {
+        function saveEditedContact(event) {
+            event.preventDefault();
+            
             if (!editingContactId) {
-                showToast('⚠️ 未找到需要保存的联系人');
+                showToast('Contact not found');
                 return;
             }
 
+            const name = document.getElementById('edit-name').value.trim();
+            const company = document.getElementById('edit-company').value.trim();
+            const linkedin = document.getElementById('edit-linkedin').value.trim();
+            const whatsapp = document.getElementById('edit-whatsapp').value.trim();
+            const email = document.getElementById('edit-email').value.trim();
+            const note = document.getElementById('edit-note').value.trim();
+            const rawText = document.getElementById('edit-raw').value.trim();
+
+            // Combine name and company if company exists
+            const fullName = company ? `${name} / ${company}` : name;
+
+            // Update rawText to include company if it's not already there
+            let updatedRawText = rawText;
+            if (company && !updatedRawText.includes(`Company: ${company}`) && !updatedRawText.includes(`公司: ${company}`)) {
+                const rawTextParts = updatedRawText ? [updatedRawText] : [];
+                if (!rawTextParts.find(p => p.includes('Company:'))) {
+                    rawTextParts.push(`Company: ${company}`);
+                }
+                updatedRawText = rawTextParts.join('\n');
+            }
+
             const updated = {
-                name: document.getElementById('edit-name').value.trim(),
-                linkedin: document.getElementById('edit-linkedin').value.trim(),
-                whatsapp: document.getElementById('edit-whatsapp').value.trim(),
-                email: document.getElementById('edit-email').value.trim(),
-                rawText: document.getElementById('edit-raw').value.trim(),
+                name: fullName,
+                linkedin: linkedin,
+                whatsapp: whatsapp,
+                email: email,
+                note: note,
+                rawText: updatedRawText,
             };
 
             apiClient
                 .updateContact(editingContactId, updated)
-                .then(({ contact }) => {
+                .then(async ({ contact }) => {
                     if (contact) {
-                        const index = contacts.findIndex(item => item.id === editingContactId);
-                        if (index >= 0) {
-                            contacts[index] = contact;
+                        // Reload contacts to ensure we have the latest data
+                        await loadContacts();
                             renderContacts();
-                        }
                     }
                     closeEditModal();
-                    showToast('✓ 联系人已更新');
+                    showToast('Contact updated successfully');
                 })
                 .catch(error => {
                     console.error(error);
-                    showToast(`⚠️ 更新失败：${error.message}`);
+                    showToast(`Update failed: ${error.message}`);
                 });
         }
 
         function deleteContact(id) {
-            if (!confirm('确定要删除该联系人吗？')) {
+            if (!confirm('Are you sure you want to delete this contact?')) {
                 return;
             }
             apiClient
@@ -789,21 +1044,329 @@
                 .then(() => {
                     contacts = contacts.filter(item => item.id !== id);
                     renderContacts();
-                    showToast('✓ 已删除联系人');
+                    showToast('Contact deleted');
                 })
                 .catch(error => {
                     console.error(error);
-                    showToast(`⚠️ 删除失败：${error.message}`);
+                    showToast(`Delete failed: ${error.message}`);
                 });
         }
 
+        async function clearContacts() {
+            if (!confirm('Are you sure you want to delete all contacts? This action cannot be undone.')) {
+                return;
+            }
+            try {
+                for (const contact of contacts) {
+                    await apiClient.deleteContact(contact.id);
+                }
+                await loadContacts();
+                renderContacts();
+                showToast('All contacts cleared');
+            } catch (error) {
+                console.error(error);
+                showToast(`Clear failed: ${error.message}`);
+            }
+        }
+
+        async function exportContacts() {
+            try {
+                await loadContacts();
+                if (!contacts.length) {
+                    showToast('No contacts to export');
+                    return;
+                }
+
+                const processedContacts = contacts.map((contact, index) => {
+                    // Parse imageUrls if it's a string
+                    let imageUrls = contact.imageUrls || [];
+                    if (typeof imageUrls === 'string') {
+                        try {
+                            imageUrls = JSON.parse(imageUrls);
+                        } catch (e) {
+                            imageUrls = [];
+                        }
+                    }
+                    if (!Array.isArray(imageUrls)) {
+                        imageUrls = [];
+                    }
+
+                    const rawTextCompany = parseCompanyFromRawText(contact.rawText);
+                    const { name, company: parsedCompany, title } = parseNameFields(contact.name);
+                    const company = contact.company || rawTextCompany || parsedCompany || '';
+                    
+                    return {
+                        number: index + 1,
+                        name: name || contact.name || '',
+                        company: company,
+                        title: title || '',
+                        linkedin: contact.linkedin || '',
+                        whatsapp: contact.whatsapp || contact.phone || '',
+                        email: contact.email || '',
+                        note: contact.note || '',
+                        imageUrls: imageUrls.length > 0 ? imageUrls.join('; ') : '',
+                        rawText: contact.rawText || '',
+                        createdAt: contact.createdAt ? formatDate(contact.createdAt) : '',
+                    };
+                });
+
+                // Include all fields in CSV export
+                const headers = ['#', 'Name', 'Company', 'Title', 'LinkedIn', 'Phone/WhatsApp', 'Email', 'Note', 'Image URLs', 'Raw Text', 'Added'];
+                const rows = processedContacts.map(contact => [
+                    contact.number,
+                    contact.name,
+                    contact.company,
+                    contact.title,
+                    contact.linkedin,
+                    contact.whatsapp,
+                    contact.email,
+                    contact.note,
+                    contact.imageUrls,
+                    contact.rawText,
+                    contact.createdAt,
+                ]);
+
+                const csvContent = [headers, ...rows]
+                    .map(row =>
+                        row.map(value => {
+                            const str = String(value || '');
+                            // Escape quotes and wrap in quotes
+                            return `"${str.replace(/"/g, '""')}"`;
+                        }).join(',')
+                    )
+                    .join('\r\n');
+
+                // Add BOM for Excel UTF-8 support
+                const BOM = '\uFEFF';
+                const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `contacts_${new Date().toISOString().split('T')[0]}.csv`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+
+                showToast(`Successfully exported ${processedContacts.length} contact(s)`);
+            } catch (error) {
+                console.error('Export error:', error);
+                showToast(`Export failed: ${error.message}`);
+            }
+        }
+
+        function handleCSVUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!file.name.toLowerCase().endsWith('.csv')) {
+                showToast('Please select a CSV file');
+                event.target.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const csvContent = e.target.result;
+                    await parseAndImportCSV(csvContent);
+                    event.target.value = '';
+                } catch (error) {
+                    console.error('CSV import error:', error);
+                    showToast(`Import failed: ${error.message}`);
+                    event.target.value = '';
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        async function parseAndImportCSV(csvContent) {
+            // Remove BOM if present
+            if (csvContent.charCodeAt(0) === 0xFEFF) {
+                csvContent = csvContent.slice(1);
+            }
+
+            const lines = csvContent.split(/\r?\n/).filter(line => line.trim());
+            if (lines.length < 2) {
+                throw new Error('CSV file must have at least a header and one data row');
+            }
+
+            // Parse header - handle case-insensitive matching
+            const headers = parseCSVLine(lines[0]).map(h => h.trim());
+            const headersLower = headers.map(h => h.toLowerCase());
+            
+            // Find column indices - support more variations
+            const nameIdx = findColumnIndex(headersLower, ['name', '姓名', '#']);
+            const companyIdx = findColumnIndex(headersLower, ['company', '公司']);
+            const titleIdx = findColumnIndex(headersLower, ['title', '职业', '职位', 'position']);
+            const linkedinIdx = findColumnIndex(headersLower, ['linkedin']);
+            const phoneIdx = findColumnIndex(headersLower, ['phone', 'whatsapp', '电话', 'phone/whatsapp', 'phone / whatsapp']);
+            const emailIdx = findColumnIndex(headersLower, ['email', '邮箱', 'mail']);
+            const noteIdx = findColumnIndex(headersLower, ['note', 'notes', '备注', 'comment']);
+            const imageUrlsIdx = findColumnIndex(headersLower, ['image', 'images', 'image urls', 'image_urls', '图片']);
+            const rawTextIdx = findColumnIndex(headersLower, ['raw text', 'raw_text', 'rawtext', '原始文本']);
+            // Skip 'Added' or 'Created' column
+            const addedIdx = findColumnIndex(headersLower, ['added', 'created', '创建时间']);
+
+            if (nameIdx === -1 && emailIdx === -1) {
+                throw new Error('CSV must contain at least Name or Email column');
+            }
+
+            let successCount = 0;
+            let errorCount = 0;
+            const errors = [];
+
+            // Parse and import each row
+            for (let i = 1; i < lines.length; i++) {
+                try {
+                    const values = parseCSVLine(lines[i]);
+                    
+                    // Skip if we're reading the number column (index 0 is usually #)
+                    const name = (nameIdx >= 0 && values[nameIdx] !== undefined && nameIdx !== 0) ? 
+                        String(values[nameIdx] || '').trim() : 
+                        ((nameIdx === 0 && values[1]) ? String(values[1] || '').trim() : '');
+                    const company = (companyIdx >= 0 && values[companyIdx] !== undefined) ? 
+                        String(values[companyIdx] || '').trim() : '';
+                    const title = (titleIdx >= 0 && values[titleIdx] !== undefined) ? 
+                        String(values[titleIdx] || '').trim() : '';
+                    const linkedin = (linkedinIdx >= 0 && values[linkedinIdx] !== undefined) ? 
+                        String(values[linkedinIdx] || '').trim() : '';
+                    const phone = (phoneIdx >= 0 && values[phoneIdx] !== undefined) ? 
+                        String(values[phoneIdx] || '').trim() : '';
+                    const email = (emailIdx >= 0 && values[emailIdx] !== undefined) ? 
+                        String(values[emailIdx] || '').trim() : '';
+                    const note = (noteIdx >= 0 && values[noteIdx] !== undefined) ? 
+                        String(values[noteIdx] || '').trim() : '';
+                    const imageUrlsStr = (imageUrlsIdx >= 0 && values[imageUrlsIdx] !== undefined) ? 
+                        String(values[imageUrlsIdx] || '').trim() : '';
+                    const rawText = (rawTextIdx >= 0 && values[rawTextIdx] !== undefined) ? 
+                        String(values[rawTextIdx] || '').trim() : '';
+
+                    // Skip empty rows
+                    if (!name && !email && !phone && !linkedin && !company) {
+                        continue;
+                    }
+
+                    // Combine name, company, and title
+                    const nameParts = [name];
+                    if (company) nameParts.push(company);
+                    if (title) nameParts.push(title);
+                    const fullName = nameParts.join(' / ');
+
+                    // Parse image URLs if provided
+                    let imageUrls = [];
+                    if (imageUrlsStr) {
+                        imageUrls = imageUrlsStr.split(/[;,\n]/).map(url => url.trim()).filter(url => url);
+                    }
+
+                    // Build rawText if not provided
+                    let finalRawText = rawText || `Imported from CSV\nName: ${name}`;
+                    if (company) finalRawText += `\nCompany: ${company}`;
+                    if (title) finalRawText += `\nTitle: ${title}`;
+                    if (email) finalRawText += `\nEmail: ${email}`;
+                    if (phone) finalRawText += `\nPhone: ${phone}`;
+                    if (linkedin) finalRawText += `\nLinkedIn: ${linkedin}`;
+                    if (note) finalRawText += `\nNote: ${note}`;
+
+                    const contactData = {
+                        name: fullName,
+                        linkedin: linkedin || '',
+                        whatsapp: phone || '',
+                        email: email || '',
+                        note: note || '',
+                        rawText: finalRawText,
+                        imageUrls: imageUrls.length > 0 ? imageUrls : undefined
+                    };
+
+                    await apiClient.createContact(contactData);
+                    successCount++;
+                } catch (error) {
+                    errorCount++;
+                    errors.push(`Row ${i + 1}: ${error.message}`);
+                    console.error(`Error importing row ${i + 1}:`, error);
+                }
+            }
+
+            // Reload contacts
+            await loadContacts();
+            renderContacts();
+
+            // Show result
+            if (successCount > 0 && errorCount === 0) {
+                showToast(`Successfully imported ${successCount} contact${successCount !== 1 ? 's' : ''}`);
+            } else if (successCount > 0 && errorCount > 0) {
+                showToast(`Imported ${successCount} contact${successCount !== 1 ? 's' : ''}, ${errorCount} error${errorCount !== 1 ? 's' : ''}`);
+                console.warn('Import errors:', errors);
+            } else {
+                throw new Error(`Failed to import: ${errors.slice(0, 3).join('; ')}`);
+            }
+        }
+
+        function parseCSVLine(line) {
+            const values = [];
+            let current = '';
+            let inQuotes = false;
+
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                const nextChar = line[i + 1];
+
+                if (char === '"') {
+                    if (inQuotes && nextChar === '"') {
+                        // Escaped quote
+                        current += '"';
+                        i++;
+                    } else {
+                        // Toggle quote state
+                        inQuotes = !inQuotes;
+                    }
+                } else if (char === ',' && !inQuotes) {
+                    // End of field
+                    values.push(current);
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            
+            // Add last field
+            values.push(current);
+            
+            return values;
+        }
+
+        function findColumnIndex(headers, possibleNames) {
+            for (const name of possibleNames) {
+                const idx = headers.findIndex(h => h.includes(name));
+                if (idx !== -1) return idx;
+            }
+            return -1;
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
         document.addEventListener('click', function(event) {
-            const modal = document.getElementById('editModal');
-            if (event.target === modal) {
+            const detailModal = document.getElementById('detailModal');
+            const editModal = document.getElementById('editModal');
+            
+            if (event.target === detailModal) {
+                closeDetailModal();
+            }
+            if (event.target === editModal) {
                 closeEditModal();
             }
         });
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
-
