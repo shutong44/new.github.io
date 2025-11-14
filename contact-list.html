@@ -211,6 +211,15 @@
 
         .search-section {
             margin-bottom: 24px;
+            position: sticky;
+            top: 0;
+            background: #f8fafc;
+            padding: 16px 0;
+            z-index: 100;
+            margin-top: -16px;
+            padding-top: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border-radius: 0 0 12px 12px;
         }
 
         .search-input {
@@ -621,6 +630,7 @@
             <div class="actions">
                 <button class="btn btn-secondary" onclick="goToContact()">Back</button>
                 <button class="btn btn-secondary" onclick="goToBusinessCard()">Scan Card</button>
+                <button class="btn btn-primary" onclick="goToConferences()">📅 Conferences</button>
                 <button class="btn btn-secondary" onclick="document.getElementById('csvUploadInput').click()">Import CSV</button>
                 <button class="btn btn-primary" onclick="exportContacts()">Export CSV</button>
                 <button class="btn btn-primary" onclick="enableAILinkedInMode()" id="aiLinkedInBtn">🤖 AI LinkedIn</button>
@@ -783,6 +793,14 @@
 
         function goToBusinessCard() {
             window.location.href = 'business-card.html';
+        }
+
+        function goToConferences() {
+            // Show a prompt to enter conference name
+            const conferenceName = prompt('Enter conference name to view:', '');
+            if (conferenceName && conferenceName.trim()) {
+                window.location.href = `conference.html?name=${encodeURIComponent(conferenceName.trim())}`;
+            }
         }
 
         async function loadContacts() {

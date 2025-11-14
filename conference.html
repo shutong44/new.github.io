@@ -337,6 +337,39 @@
             outline: none;
             border-color: #667eea;
         }
+
+        .date-section {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .date-label {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .date-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+
+        .date-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .date-display {
+            font-size: 13px;
+            color: #2563eb;
+            font-weight: 500;
+            margin-top: 4px;
+        }
     </style>
 </head>
 <body>
@@ -347,7 +380,7 @@
                 <div class="badge" id="conferenceNameBadge">Loading...</div>
             </div>
             <div class="actions">
-                <button class="btn btn-secondary" onclick="goToContactList()">Back to Contacts</button>
+                <button class="btn btn-secondary" onclick="goToContactList()">Back</button>
             </div>
         </div>
     </div>
@@ -477,6 +510,13 @@
                 const parsedCompany = contact.company || company || '—';
 
                 const meetingStatus = contact.meetingStatus || 'pending';
+                
+                // Format meeting date for input
+                let meetingDateInput = '';
+                if (contact.meetingDate) {
+                    const date = new Date(contact.meetingDate * 1000);
+                    meetingDateInput = date.toISOString().split('T')[0];
+                }
 
                 card.innerHTML = `
                     <div class="contact-header">
@@ -532,6 +572,18 @@
                         </button>
                     </div>
 
+                    <div class="date-section">
+                        <div class="date-label">📅 Meeting Date</div>
+                        <input type="date" 
+                               class="date-input" 
+                               id="date-${contact.id}" 
+                               value="${meetingDateInput}"
+                               onchange="saveMeetingDate('${contact.id}')">
+                        ${contact.meetingDate ? `
+                        <div class="date-display">Planned: ${formatDate(contact.meetingDate)}</div>
+                        ` : ''}
+                    </div>
+
                     <div class="purpose-section">
                         <div class="purpose-label">Purpose / Notes</div>
                         <textarea class="purpose-input" 
@@ -564,6 +616,34 @@
             }
         }
 
+        async function saveMeetingDate(contactId) {
+            const dateInput = document.getElementById(`date-${contactId}`);
+            const dateValue = dateInput.value;
+            
+            try {
+                let meetingDate = null;
+                if (dateValue) {
+                    // Convert date string to timestamp (seconds)
+                    const date = new Date(dateValue);
+                    meetingDate = Math.floor(date.getTime() / 1000);
+                }
+                
+                await apiClient.updateContact(contactId, { meetingDate: meetingDate });
+                
+                // Update local data
+                const contact = conferenceContacts.find(c => c.id === contactId);
+                if (contact) {
+                    contact.meetingDate = meetingDate;
+                }
+                
+                renderContacts();
+                showToast('Meeting date saved');
+            } catch (error) {
+                console.error(error);
+                showToast('Failed to save meeting date: ' + error.message);
+            }
+        }
+
         async function savePurpose(contactId) {
             const purposeInput = document.getElementById(`purpose-${contactId}`);
             const purpose = purposeInput.value.trim();
@@ -575,6 +655,16 @@
                 console.error(error);
                 showToast('Failed to save purpose: ' + error.message);
             }
+        }
+
+        function formatDate(timestamp) {
+            if (!timestamp) return '';
+            const date = new Date(timestamp * 1000);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric'
+            });
         }
 
         function updateStats() {

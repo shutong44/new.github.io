@@ -615,8 +615,12 @@
                 <div class="share-input-group">
                     <input type="text" class="share-input" id="share-link-input" readonly>
                     <button class="share-btn" onclick="copyShareLink()">📋 Copy</button>
+                    <button class="share-btn" onclick="toggleQRCode()">📱 QR Code</button>
                 </div>
                 <div class="share-hint" id="share-hint">Create a slug in Edit to enable sharing</div>
+                <div id="qrcode-container" style="display: none; margin-top: 16px; text-align: center; padding: 16px; background: white; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    <div id="qrcode" style="display: inline-block;"></div>
+                </div>
             </div>
         </div>
 
@@ -720,6 +724,7 @@
 
     <div class="toast" id="toast"></div>
 
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <script src="api-client.js"></script>
     <script>
         const DEFAULT_REMOTE_BASE = 'https://cloudflare-worker-google-oauth.wangshutong774.workers.dev';
@@ -911,6 +916,61 @@
                 shareHint.textContent = 'Anyone with this link can view your profile';
             } else {
                 shareSection.style.display = 'none';
+            }
+        }
+
+        function toggleQRCode() {
+            const qrContainer = document.getElementById('qrcode-container');
+            const qrDiv = document.getElementById('qrcode');
+            const shareInput = document.getElementById('share-link-input');
+            const shareUrl = shareInput.value;
+            
+            if (!shareUrl) {
+                showToast('No share link available');
+                return;
+            }
+            
+            if (qrContainer.style.display === 'none' || qrContainer.style.display === '') {
+                // Show QR code
+                qrContainer.style.display = 'block';
+                qrDiv.innerHTML = ''; // Clear previous QR code
+                
+                // Use QRCode library to generate QR code
+                if (typeof QRCode !== 'undefined') {
+                    QRCode.toCanvas(qrDiv, shareUrl, {
+                        width: 200,
+                        margin: 2,
+                        color: {
+                            dark: '#1a202c',
+                            light: '#ffffff'
+                        }
+                    }, function (error) {
+                        if (error) {
+                            console.error('QR code generation error:', error);
+                            // Fallback: create QR code as data URL
+                            QRCode.toDataURL(shareUrl, {
+                                width: 200,
+                                margin: 2,
+                                color: {
+                                    dark: '#1a202c',
+                                    light: '#ffffff'
+                                }
+                            }, function (err, url) {
+                                if (err) {
+                                    console.error(err);
+                                    showToast('Failed to generate QR code');
+                                } else {
+                                    qrDiv.innerHTML = `<img src="${url}" alt="QR Code" style="max-width: 200px;">`;
+                                }
+                            });
+                        }
+                    });
+                } else {
+                    showToast('QR Code library not loaded. Please refresh the page.');
+                }
+            } else {
+                // Hide QR code
+                qrContainer.style.display = 'none';
             }
         }
 
