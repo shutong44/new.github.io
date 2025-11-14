@@ -686,12 +686,12 @@
                     <textarea class="form-textarea" id="edit-company-business" placeholder="What does this company do? (e.g., Software development, Marketing agency, etc.)" rows="2"></textarea>
                     <div style="font-size: 12px; color: #64748b; margin-top: 4px;">
                         Describe what this company does. You can fill this manually or use LinkedIn search above.
-                    </div>
-                </div>
+            </div>
+            </div>
                 <div class="form-group">
                     <label class="form-label">Conference</label>
                     <input type="text" class="form-input" id="edit-conference" placeholder="e.g., A Conference, B Conference">
-                </div>
+            </div>
                 <div class="form-group">
                     <label class="form-label">LinkedIn</label>
                     <input type="text" class="form-input" id="edit-linkedin" placeholder="https://linkedin.com/in/username">
@@ -796,11 +796,8 @@
         }
 
         function goToConferences() {
-            // Show a prompt to enter conference name
-            const conferenceName = prompt('Enter conference name to view:', '');
-            if (conferenceName && conferenceName.trim()) {
-                window.location.href = `conference.html?name=${encodeURIComponent(conferenceName.trim())}`;
-            }
+            // Navigate to conference list page
+            window.location.href = 'conference.html';
         }
 
         async function loadContacts() {
@@ -1261,7 +1258,7 @@
                 aiLinkedInMode = false;
                 return;
             }
-            
+
             // Show AI LinkedIn bar
             document.getElementById('aiLinkedInBar').style.display = 'flex';
             document.getElementById('missingLinkedInCount').textContent = contactsMissingLinkedIn.length;

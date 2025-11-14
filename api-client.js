@@ -96,6 +96,23 @@
         body: contactData,
       });
     },
+    async listConferences() {
+      return request('/api/conferences');
+    },
+    async createConference(conference) {
+      return request('/api/conferences', { method: 'POST', body: conference });
+    },
+    async updateConference(id, conference) {
+      return request(`/api/conferences/${encodeURIComponent(id)}`, {
+        method: 'PUT',
+        body: conference,
+      });
+    },
+    async deleteConference(id) {
+      return request(`/api/conferences/${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+      });
+    },
     async logout() {
       return request('/logout', { method: 'POST', body: {} });
     },

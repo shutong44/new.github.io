@@ -387,7 +387,17 @@
 
     <div class="container">
         <div class="conference-info">
-            <div class="conference-title" id="conferenceTitle">Conference</div>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                <div>
+                    <div class="conference-title" id="conferenceTitle">Conference</div>
+                    <div style="margin-top: 8px;">
+                        <label style="font-size: 12px; color: #64748b; margin-right: 8px;">📅 Conference Date:</label>
+                        <input type="date" id="conference-date-input" style="padding: 6px 10px; border: 2px solid #e2e8f0; border-radius: 6px; font-size: 13px;" onchange="saveConferenceDate()">
+                        <div id="conference-date-display" style="margin-top: 6px; font-size: 13px; color: #2563eb; font-weight: 500;"></div>
+                    </div>
+                </div>
+                <button class="btn btn-secondary" onclick="editConferenceInfo()" style="padding: 8px 16px; font-size: 13px;">✏️ Edit</button>
+            </div>
             <div class="stats">
                 <div class="stat-item">
                     <div class="stat-label">Total</div>
@@ -417,6 +427,7 @@
     <script>
         let conferenceName = '';
         let conferenceContacts = [];
+        let currentConference = null;
 
         async function init() {
             try {
@@ -427,14 +438,14 @@
                 conferenceName = urlParams.get('name') || sessionStorage.getItem('conferenceName') || '';
                 
                 if (!conferenceName) {
-                    showToast('No conference name provided');
-                    setTimeout(() => goToContactList(), 2000);
+                    // No conference name - show conference list instead
+                    await showConferenceList();
                     return;
                 }
 
-                // Update UI
-                document.getElementById('conferenceTitle').textContent = conferenceName;
-                document.getElementById('conferenceNameBadge').textContent = conferenceName;
+                // Load conference info and contacts
+                await loadConferenceInfo();
+                await loadConferenceContacts();
 
                 // Get selected contacts from sessionStorage (if coming from contact-list)
                 const selectedContactsStr = sessionStorage.getItem('selectedContacts');
@@ -444,12 +455,217 @@
                     sessionStorage.removeItem('selectedContacts');
                     sessionStorage.removeItem('conferenceName');
                 }
-
-                await loadConferenceContacts();
             } catch (error) {
                 console.error(error);
                 showToast('Failed to initialize: ' + error.message);
             }
+        }
+
+        async function loadConferenceInfo() {
+            try {
+                // Get conference from conferences table
+                const conferencesResponse = await apiClient.listConferences();
+                const conferences = Array.isArray(conferencesResponse.conferences) ? conferencesResponse.conferences : [];
+                currentConference = conferences.find(c => c.name === conferenceName);
+                
+                if (!currentConference) {
+                    // Conference doesn't exist in conferences table, create it
+                    try {
+                        currentConference = await apiClient.createConference({ name: conferenceName });
+                    } catch (error) {
+                        console.error('Failed to create conference:', error);
+                    }
+                }
+
+                // Update UI
+                document.getElementById('conferenceTitle').textContent = conferenceName;
+                document.getElementById('conferenceNameBadge').textContent = conferenceName;
+
+                // Update date input if conference has a date
+                if (currentConference && currentConference.date) {
+                    const date = new Date(currentConference.date * 1000);
+                    const dateStr = date.toISOString().split('T')[0];
+                    document.getElementById('conference-date-input').value = dateStr;
+                    document.getElementById('conference-date-display').textContent = `Date: ${formatDate(currentConference.date)}`;
+                }
+            } catch (error) {
+                console.error('Failed to load conference info:', error);
+            }
+        }
+
+        async function saveConferenceDate() {
+            if (!currentConference) {
+                showToast('Conference not found');
+                return;
+            }
+
+            const dateInput = document.getElementById('conference-date-input');
+            const dateValue = dateInput.value;
+            
+            try {
+                let date = null;
+                if (dateValue) {
+                    const dateObj = new Date(dateValue);
+                    date = Math.floor(dateObj.getTime() / 1000);
+                }
+
+                currentConference = await apiClient.updateConference(currentConference.id, { date: date });
+                
+                if (date) {
+                    document.getElementById('conference-date-display').textContent = `Date: ${formatDate(date)}`;
+                } else {
+                    document.getElementById('conference-date-display').textContent = '';
+                }
+                
+                showToast('Conference date saved');
+            } catch (error) {
+                console.error(error);
+                showToast('Failed to save conference date: ' + error.message);
+            }
+        }
+
+        function editConferenceInfo() {
+            const newName = prompt('Enter new conference name:', conferenceName);
+            if (newName && newName.trim() && newName.trim() !== conferenceName) {
+                updateConferenceName(newName.trim());
+            }
+        }
+
+        async function updateConferenceName(newName) {
+            if (!currentConference) {
+                showToast('Conference not found');
+                return;
+            }
+
+            try {
+                // Update conference name
+                currentConference = await apiClient.updateConference(currentConference.id, { name: newName });
+                
+                // Update all contacts with this conference name
+                const contacts = await apiClient.listContacts();
+                const contactsToUpdate = contacts.contacts.filter(c => c.conference === conferenceName);
+                
+                if (contactsToUpdate.length > 0) {
+                    const promises = contactsToUpdate.map(contact => 
+                        apiClient.updateContact(contact.id, { conference: newName })
+                    );
+                    await Promise.all(promises);
+                }
+
+                conferenceName = newName;
+                document.getElementById('conferenceTitle').textContent = conferenceName;
+                document.getElementById('conferenceNameBadge').textContent = conferenceName;
+                
+                await loadConferenceContacts();
+                showToast('Conference name updated');
+            } catch (error) {
+                console.error(error);
+                showToast('Failed to update conference name: ' + error.message);
+            }
+        }
+
+        async function showConferenceList() {
+            // Change to list mode
+            document.querySelector('.container').innerHTML = `
+                <div class="conference-info">
+                    <div class="conference-title">📅 My Conferences</div>
+                    <div style="margin-top: 16px;">
+                        <button class="btn btn-primary" onclick="createNewConference()" style="margin-bottom: 16px;">+ New Conference</button>
+                    </div>
+                </div>
+                <div id="conferencesGrid" class="contacts-grid"></div>
+            `;
+
+            await loadConferenceList();
+        }
+
+        async function loadConferenceList() {
+            try {
+                const response = await apiClient.listConferences();
+                const conferences = Array.isArray(response.conferences) ? response.conferences : [];
+                
+                // Also get conferences from contacts (for backward compatibility)
+                const contactsResponse = await apiClient.listContacts();
+                const allContacts = Array.isArray(contactsResponse.contacts) ? contactsResponse.contacts : [];
+                const conferenceNamesFromContacts = [...new Set(allContacts.map(c => c.conference).filter(Boolean))];
+                
+                // Merge and create conference entries if they don't exist
+                const allConferenceNames = [...new Set([...conferences.map(c => c.name), ...conferenceNamesFromContacts])];
+                
+                const grid = document.getElementById('conferencesGrid');
+                grid.innerHTML = '';
+
+                if (allConferenceNames.length === 0) {
+                    grid.innerHTML = `
+                        <div class="empty-state" style="grid-column: 1 / -1;">
+                            <h2>No conferences yet</h2>
+                            <p>Create a new conference to get started</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Display conferences
+                for (const confName of allConferenceNames) {
+                    const conf = conferences.find(c => c.name === confName);
+                    const contacts = allContacts.filter(c => c.conference === confName);
+                    
+                    const card = document.createElement('div');
+                    card.className = 'contact-card';
+                    card.style.cursor = 'pointer';
+                    card.onclick = () => {
+                        window.location.href = `conference.html?name=${encodeURIComponent(confName)}`;
+                    };
+
+                    const total = contacts.length;
+                    const pending = contacts.filter(c => !c.meetingStatus || c.meetingStatus === 'pending').length;
+                    const talked = contacts.filter(c => c.meetingStatus === 'talked').length;
+                    const skipped = contacts.filter(c => c.meetingStatus === 'skipped').length;
+
+                    card.innerHTML = `
+                        <div class="contact-header">
+                            <div>
+                                <div class="contact-name">${confName}</div>
+                                ${conf && conf.date ? `
+                                <div class="contact-company" style="margin-top: 4px;">
+                                    📅 ${formatDate(conf.date)}
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                        <div class="stats" style="margin-top: 16px;">
+                            <div class="stat-item">
+                                <div class="stat-label">Total</div>
+                                <div class="stat-value">${total}</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Pending</div>
+                                <div class="stat-value">${pending}</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Talked</div>
+                                <div class="stat-value">${talked}</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Skipped</div>
+                                <div class="stat-value">${skipped}</div>
+                            </div>
+                        </div>
+                    `;
+
+                    grid.appendChild(card);
+                }
+            } catch (error) {
+                console.error(error);
+                showToast('Failed to load conferences: ' + error.message);
+            }
+        }
+
+        function createNewConference() {
+            const name = prompt('Enter conference name:');
+            if (!name || !name.trim()) return;
+            
+            window.location.href = `conference.html?name=${encodeURIComponent(name.trim())}`;
         }
 
         async function loadConferenceContacts() {
@@ -510,13 +726,6 @@
                 const parsedCompany = contact.company || company || '—';
 
                 const meetingStatus = contact.meetingStatus || 'pending';
-                
-                // Format meeting date for input
-                let meetingDateInput = '';
-                if (contact.meetingDate) {
-                    const date = new Date(contact.meetingDate * 1000);
-                    meetingDateInput = date.toISOString().split('T')[0];
-                }
 
                 card.innerHTML = `
                     <div class="contact-header">
@@ -572,18 +781,6 @@
                         </button>
                     </div>
 
-                    <div class="date-section">
-                        <div class="date-label">📅 Meeting Date</div>
-                        <input type="date" 
-                               class="date-input" 
-                               id="date-${contact.id}" 
-                               value="${meetingDateInput}"
-                               onchange="saveMeetingDate('${contact.id}')">
-                        ${contact.meetingDate ? `
-                        <div class="date-display">Planned: ${formatDate(contact.meetingDate)}</div>
-                        ` : ''}
-                    </div>
-
                     <div class="purpose-section">
                         <div class="purpose-label">Purpose / Notes</div>
                         <textarea class="purpose-input" 
@@ -616,33 +813,6 @@
             }
         }
 
-        async function saveMeetingDate(contactId) {
-            const dateInput = document.getElementById(`date-${contactId}`);
-            const dateValue = dateInput.value;
-            
-            try {
-                let meetingDate = null;
-                if (dateValue) {
-                    // Convert date string to timestamp (seconds)
-                    const date = new Date(dateValue);
-                    meetingDate = Math.floor(date.getTime() / 1000);
-                }
-                
-                await apiClient.updateContact(contactId, { meetingDate: meetingDate });
-                
-                // Update local data
-                const contact = conferenceContacts.find(c => c.id === contactId);
-                if (contact) {
-                    contact.meetingDate = meetingDate;
-                }
-                
-                renderContacts();
-                showToast('Meeting date saved');
-            } catch (error) {
-                console.error(error);
-                showToast('Failed to save meeting date: ' + error.message);
-            }
-        }
 
         async function savePurpose(contactId) {
             const purposeInput = document.getElementById(`purpose-${contactId}`);
