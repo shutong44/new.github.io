@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confera — Smart Business Card & Contact Management Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background: #ffffff;
+            color: #000000;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Navigation Bar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            padding: 2rem 3rem;
+            display: flex;
+            gap: 2rem;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            padding: 0.8rem 2rem;
+            text-decoration: none;
+            color: #ffffff;
+            font-size: 0.95rem;
+            font-weight: 400;
+            letter-spacing: 0.1em;
+            border: 2px solid #ffffff;
+            transition: all 0.3s ease;
+            background: transparent;
+        }
+
+        .nav-item:hover {
+            background: #ffffff;
+            color: #000000;
+        }
+
+        .nav-item.active {
+            background: #ffffff;
+            color: #000000;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+            color: #ffffff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 50%;
+            top: -250px;
+            right: -250px;
+        }
+
+        .hero-content {
+            text-align: center;
+            padding: 2rem;
+            max-width: 900px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .logo {
+            font-size: 4rem;
+            font-weight: 300;
+            letter-spacing: 0.1em;
+            margin-bottom: 1rem;
+        }
+
+        .logo sup {
+            font-size: 1.5rem;
+            margin-left: 0.2rem;
+        }
+
+        .tagline {
+            font-size: 1.5rem;
+            font-weight: 300;
+            margin-bottom: 3rem;
+            color: #cccccc;
+            letter-spacing: 0.05em;
+        }
+
+        .brand-meaning {
+            max-width: 600px;
+            margin: 0 auto 3rem;
+            padding: 2rem;
+            border-left: 2px solid #ffffff;
+            text-align: left;
+        }
+
+        .brand-meaning h3 {
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .brand-meaning p {
+            font-size: 1rem;
+            line-height: 1.8;
+            color: #e0e0e0;
+            margin-bottom: 0.5rem;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 1.2rem 3rem;
+            background: #ffffff;
+            color: #000000;
+            text-decoration: none;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            transition: all 0.3s ease;
+            border: 2px solid #ffffff;
+        }
+
+        .cta-button:hover {
+            background: transparent;
+            color: #ffffff;
+        }
+
+        /* Why Section */
+        .why-section {
+            padding: 8rem 2rem;
+            background: #ffffff;
+            color: #000000;
+        }
+
+        .section-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 3rem;
+            font-weight: 300;
+            margin-bottom: 2rem;
+            letter-spacing: 0.05em;
+        }
+
+        .section-content {
+            font-size: 1.2rem;
+            line-height: 1.9;
+            color: #333333;
+            max-width: 800px;
+        }
+
+        /* Features Section */
+        .features-section {
+            padding: 8rem 2rem;
+            background: #000000;
+            color: #ffffff;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 4rem;
+            margin-top: 4rem;
+        }
+
+        .feature {
+            padding: 2rem 0;
+            border-top: 1px solid #333333;
+        }
+
+        .feature-number {
+            font-size: 0.9rem;
+            color: #888888;
+            margin-bottom: 1rem;
+            letter-spacing: 0.1em;
+        }
+
+        .feature-title {
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+            letter-spacing: 0.02em;
+        }
+
+        .feature-description {
+            font-size: 1rem;
+            line-height: 1.8;
+            color: #cccccc;
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .feature-list li {
+            padding: 0.3rem 0;
+            color: #aaaaaa;
+            font-size: 0.95rem;
+        }
+
+        .feature-list li::before {
+            content: "—";
+            margin-right: 0.8rem;
+        }
+
+        /* Standout Section */
+        .standout-section {
+            padding: 8rem 2rem;
+            background: #f5f5f5;
+            color: #000000;
+        }
+
+        .standout-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 3rem;
+            margin-top: 3rem;
+        }
+
+        .standout-item {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .standout-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .standout-text {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            color: #333333;
+        }
+
+        /* Final CTA Section */
+        .final-cta {
+            padding: 10rem 2rem;
+            background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+            color: #ffffff;
+            text-align: center;
+        }
+
+        .final-cta h2 {
+            font-size: 3.5rem;
+            font-weight: 300;
+            margin-bottom: 2rem;
+            letter-spacing: 0.05em;
+        }
+
+        .final-cta p {
+            font-size: 1.3rem;
+            max-width: 800px;
+            margin: 0 auto 3rem;
+            color: #cccccc;
+            line-height: 1.8;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 1.5rem 1.5rem;
+                gap: 1rem;
+            }
+
+            .nav-item {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.85rem;
+            }
+
+            .logo {
+                font-size: 2.5rem;
+            }
+
+            .tagline {
+                font-size: 1.2rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .final-cta h2 {
+                font-size: 2.2rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .standout-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .standout-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Scroll Indicator */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #888888;
+            font-size: 0.9rem;
+            letter-spacing: 0.15em;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            40% {
+                transform: translateX(-50%) translateY(-10px);
+            }
+            60% {
+                transform: translateX(-50%) translateY(-5px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <a href="#" class="nav-item active">INTRO</a>
+        <a href="contact.html" class="nav-item">TRY DEMO</a>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="logo">Confera<sup>°</sup></h1>
+            <p class="tagline">Smart Business Card & Contact Management Platform</p>
+            
+            <div class="brand-meaning">
+                <h3>Redefining the Conference Networking Era</h3>
+                <p><strong>Confe</strong> — Conference</p>
+                <p><strong>Era</strong> — A new era, a new way of connecting</p>
+                <p style="margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 1.5rem;">
+                    A new era of seamless, intelligent, and intentional networking, designed for modern professionals who transform every conference interaction into lasting value.
+                </p>
+            </div>
+            
+            <a href="#features" class="cta-button">EXPLORE</a>
+        </div>
+        <div class="scroll-indicator">SCROLL</div>
+    </section>
+
+    <!-- Why Confera Section -->
+    <section class="why-section">
+        <div class="section-container">
+            <h2 class="section-title">Why Confera?</h2>
+            <div class="section-content">
+                <p>Networking at conferences is traditionally messy — juggling LinkedIn, WhatsApp, and stacks of business cards slows you down. Contact details get lost, follow-ups get forgotten, and opportunities vanish.</p>
+                <p style="margin-top: 2rem; font-weight: 500;">Confera brings you into a new era of professional connection, eliminating friction and elevating the entire networking experience.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section" id="features">
+        <div class="section-container">
+            <h2 class="section-title">Core Features</h2>
+            
+            <div class="features-grid">
+                <div class="feature">
+                    <div class="feature-number">01</div>
+                    <h3 class="feature-title">Instant Contact Exchange</h3>
+                    <p class="feature-description">A simple tap or scan shares your LinkedIn, email, phone number, and company profile. All exchanges are consent-based, ensuring privacy and professionalism.</p>
+                    <ul class="feature-list">
+                        <li>NFC tap technology</li>
+                        <li>QR code scanning</li>
+                        <li>Privacy-first approach</li>
+                    </ul>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-number">02</div>
+                    <h3 class="feature-title">AI-Powered Business Card Recognition</h3>
+                    <p class="feature-description">Photograph any physical business card — Confera's advanced AI extracts all essential information accurately and instantly.</p>
+                    <ul class="feature-list">
+                        <li>Name & job title</li>
+                        <li>Company details</li>
+                        <li>Phone & email</li>
+                        <li>LinkedIn profile</li>
+                    </ul>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-number">03</div>
+                    <h3 class="feature-title">Conference Interaction Planning</h3>
+                    <p class="feature-description">Enter conferences with intention. Build a personalized interaction schedule and set networking objectives.</p>
+                    <ul class="feature-list">
+                        <li>Pre-plan meetings</li>
+                        <li>Set objectives</li>
+                        <li>Track engagement</li>
+                        <li>Strategic opportunities</li>
+                    </ul>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-number">04</div>
+                    <h3 class="feature-title">Smart Contact Management</h3>
+                    <p class="feature-description">Manage your network with clarity. Import, export, and organize contacts for seamless CRM integration.</p>
+                    <ul class="feature-list">
+                        <li>CSV import/export</li>
+                        <li>Team sharing</li>
+                        <li>Tags & categories</li>
+                        <li>Cross-device sync</li>
+                    </ul>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-number">05</div>
+                    <h3 class="feature-title">Secure Cloud Storage</h3>
+                    <p class="feature-description">All business card images and contact information are encrypted and stored securely in the cloud.</p>
+                    <ul class="feature-list">
+                        <li>End-to-end encryption</li>
+                        <li>Cloud backup</li>
+                        <li>Accessible anywhere</li>
+                        <li>Protected data</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Confera Stands Out -->
+    <section class="standout-section">
+        <div class="section-container">
+            <h2 class="section-title">Why Confera Stands Out</h2>
+            
+            <div class="standout-grid">
+                <div class="standout-item">
+                    <div class="standout-icon">□</div>
+                    <p class="standout-text">Built specifically for conference success, not generic contact storage</p>
+                </div>
+                
+                <div class="standout-item">
+                    <div class="standout-icon">○</div>
+                    <p class="standout-text">AI that understands professional identity, not just text extraction</p>
+                </div>
+                
+                <div class="standout-item">
+                    <div class="standout-icon">□</div>
+                    <p class="standout-text">Privacy-first design for responsible information sharing</p>
+                </div>
+                
+                <div class="standout-item">
+                    <div class="standout-icon">○</div>
+                    <p class="standout-text">A platform that supports the new era of intelligent networking</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="final-cta">
+        <h2>Welcome to the Confera Era</h2>
+        <p>Confera empowers you to focus on meaningful relationships, not manual tasks. It transforms every interaction, business card, and handshake into a structured, secure, and actionable connection.</p>
+        <a href="#" class="cta-button">GET STARTED</a>
+    </section>
+</body>
+</html>
