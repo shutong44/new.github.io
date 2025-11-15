@@ -633,8 +633,20 @@
                     });
                     
                     if (!response.ok) {
-                        const errorData = await response.json().catch(() => ({}));
-                        throw new Error(errorData.error || `HTTP ${response.status}`);
+                        let errorMessage = `HTTP ${response.status}`;
+                        try {
+                            const errorData = await response.json();
+                            errorMessage = errorData.error || errorData.message || errorMessage;
+                        } catch (e) {
+                            // If response is not JSON, get text instead
+                            try {
+                                const errorText = await response.text();
+                                errorMessage = errorText || errorMessage;
+                            } catch (e2) {
+                                // Ignore
+                            }
+                        }
+                        throw new Error(errorMessage);
                     }
                     
                     const result = await response.json();
@@ -647,7 +659,13 @@
                     statusText.textContent = `Processed ${completedCount}/${selectedFiles.length} images...`;
                 } catch (error) {
                     console.error(`Error recognizing image ${i + 1}:`, error);
-                    showToast(`Error processing image ${i + 1}: ${error.message}`);
+                    const errorMsg = error.message || 'Unknown error';
+                    // Prevent infinite recursion by not showing toast if error message is too long or contains stack trace
+                    if (!errorMsg.includes('Maximum call stack size') && errorMsg.length < 500) {
+                        showToast(`Error processing image ${i + 1}: ${errorMsg.substring(0, 100)}`);
+                    } else {
+                        showToast(`Error processing image ${i + 1}. Check console for details.`);
+                    }
                 }
             }
 
