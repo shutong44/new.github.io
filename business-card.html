@@ -898,20 +898,24 @@
                 const rawText = rawTextParts.join('\n');
 
                 // Ensure all fields are properly formatted
+                // Convert empty strings to null, and ensure imageUrls is always an array
                 const contactData = {
-                    name: fullName || name || company || title || null,
+                    name: (name || company || title) || null, // Use individual name, not combined fullName
+                    title: title || null, // Save title separately
                     linkedin: linkedin || null,
                     whatsapp: whatsapp || null,
                     email: email || null,
                     company: company || null,
                     rawText: rawText || null,
-                    imageUrls: imageUrls // Array of image URLs
+                    imageUrls: Array.isArray(imageUrls) ? imageUrls : [] // Always ensure it's an array
                 };
                 
-                // Remove undefined fields
+                // Remove undefined fields and convert empty strings to null
                 Object.keys(contactData).forEach(key => {
                     if (contactData[key] === undefined) {
                         delete contactData[key];
+                    } else if (contactData[key] === '') {
+                        contactData[key] = null;
                     }
                 });
                 
