@@ -569,16 +569,8 @@
 
             updateImagesCount();
             
-            // Only re-run OCR if new files were added
-            if (hasNewFiles) {
-                // Debounce OCR call to avoid multiple rapid calls
-                if (ocrDebounceTimer) {
-                    clearTimeout(ocrDebounceTimer);
-                }
-                ocrDebounceTimer = setTimeout(() => {
-                    runOCROnAllImages();
-                }, 300); // Wait 300ms after last file change
-            }
+            // Don't auto-run OCR - user must click "Start Scan" button
+            // OCR will be triggered only when user clicks "Start Scan"
         }
 
         function addImagePreview(file) {
@@ -761,95 +753,121 @@
             }
         }
 
-        function populateFieldsFromText(text) {
-            const lines = text.split(/\r?\n/).map(line => line.trim()).filter(line => line);
+        function parseExtractedText(text) {
+            const result = {
+                name: '',
+                company: '',
+                title: '',
+                linkedin: '',
+                phone: '',
+                email: ''
+            };
+            
+            // Clean text - remove markdown code blocks like ```text
+            text = text.replace(/```\w*\n?/g, '').replace(/```/g, '').trim();
+            const lines = text.split(/\r?\n/).map(line => line.trim()).filter(line => line && !line.match(/^(text|output|result)$/i));
 
             // First, try to parse structured format (NAME: xxx, Company: xxx, etc.)
-            const nameMatch = text.match(/\b(?:NAME|姓名|名字):\s*(.+?)(?:\n|$)/i);
+            const nameMatch = text.match(/\b(?:NAME|Name|姓名|名字):\s*(.+?)(?:\n|$)/i);
             if (nameMatch) {
-                document.getElementById('name-input').value = nameMatch[1].trim();
+                result.name = nameMatch[1].trim();
             }
 
             const companyMatch = text.match(/\b(?:Company|公司|COMPANY):\s*(.+?)(?:\n|$)/i);
             if (companyMatch) {
-                document.getElementById('company-input').value = companyMatch[1].trim();
+                result.company = companyMatch[1].trim();
             }
 
-            const titleMatch = text.match(/\b(?:TITLE|职位|Title|Position|职位):\s*(.+?)(?:\n|$)/i);
+            const titleMatch = text.match(/\b(?:TITLE|Title|职位|Position):\s*(.+?)(?:\n|$)/i);
             if (titleMatch) {
-                document.getElementById('title-input').value = titleMatch[1].trim();
+                result.title = titleMatch[1].trim();
             }
 
-            // 邮箱匹配
+            // Email matching
             const emailMatch = text.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
             if (emailMatch) {
-                document.getElementById('email-input').value = emailMatch[0];
+                result.email = emailMatch[0];
             }
 
-            // LinkedIn匹配
-            const linkedinMatch = text.match(/(https?:\/\/)?(www\.)?linkedin\.com\/in\/[A-Za-z0-9\-_%]+/i);
+            // LinkedIn matching
+            const linkedinMatch = text.match(/(?:LinkedIn|linkedin|LINKEDIN):\s*(.+?)(?:\n|$)/i) || 
+                                 text.match(/(https?:\/\/)?(www\.)?linkedin\.com\/in\/[A-Za-z0-9\-_%]+/i);
             if (linkedinMatch) {
-                const value = linkedinMatch[0];
-                document.getElementById('linkedin-input').value = value.startsWith('http') ? value : `https://${value.replace(/^\/\//, '')}`;
+                let value = linkedinMatch[1] ? linkedinMatch[1].trim() : linkedinMatch[0];
+                if (!value.startsWith('http')) {
+                    value = value.startsWith('linkedin.com') ? `https://${value}` : `https://${value.replace(/^\/\//, '')}`;
+                }
+                result.linkedin = value;
             }
 
-            // 电话/WhatsApp匹配
-            const phoneMatch = text.match(/(?:Phone|电话|PHONE|WhatsApp|WhatsApp):\s*(.+?)(?:\n|$)/i) || text.match(/(\+?\d[\d\s\-()]{6,}\d)/);
+            // Phone/WhatsApp matching
+            const phoneMatch = text.match(/(?:Phone|电话|PHONE|WhatsApp):\s*(.+?)(?:\n|$)/i) || 
+                              text.match(/(\+?\d[\d\s\-()]{6,}\d)/);
             if (phoneMatch) {
-                const phoneValue = phoneMatch[1] ? phoneMatch[1].trim() : phoneMatch[0].replace(/\s+/g, ' ').trim();
-                document.getElementById('whatsapp-input').value = phoneValue;
+                result.phone = phoneMatch[1] ? phoneMatch[1].trim() : phoneMatch[0].replace(/\s+/g, ' ').trim();
             }
-
-            // 提取姓名、公司、职业（fallback if structured format not found）
-            if (lines.length > 0) {
-                // 第一行通常是姓名（跳过 "text" 这样的占位符）
-                const nameInput = document.getElementById('name-input');
-                if (!nameInput.value.trim()) {
-                    // Skip common placeholder words
-                    const skipWords = ['text', 'text:', 'output', 'result'];
-                    const firstLine = lines[0];
-                    if (!skipWords.some(word => firstLine.toLowerCase().startsWith(word.toLowerCase()))) {
-                        nameInput.value = firstLine;
-                    } else if (lines.length > 1) {
-                        nameInput.value = lines[1];
-                    }
+            
+            // If structured format not found, try line-by-line parsing (fallback)
+            if (!result.name && lines.length > 0) {
+                // Skip common placeholder words
+                const skipWords = ['text', 'text:', 'output', 'result'];
+                const firstLine = lines[0];
+                if (!skipWords.some(word => firstLine.toLowerCase().startsWith(word.toLowerCase()))) {
+                    result.name = firstLine;
+                } else if (lines.length > 1) {
+                    result.name = lines[1];
                 }
-
-                // 查找包含"公司"、"有限公司"、"股份有限公司"等的行作为公司
-                const companyKeywords = ['公司', '有限公司', '股份有限公司', 'corporation', 'corp', 'ltd', 'inc', 'co.', 'company'];
-                const companyLine = lines.find(line => 
-                    companyKeywords.some(keyword => line.toLowerCase().includes(keyword.toLowerCase()))
+            }
+            
+            if (!result.company && lines.length > 1) {
+                // Try to find company in lines (skip name line)
+                const companyKeywords = ['公司', '有限公司', '股份有限公司', 'corporation', 'corp', 'ltd', 'inc', 'co.', 'company', 'EY'];
+                const companyLine = lines.find((line, index) => 
+                    index > 0 && companyKeywords.some(keyword => line.toLowerCase().includes(keyword.toLowerCase()))
                 );
-                if (companyLine && !document.getElementById('company-input').value.trim()) {
-                    document.getElementById('company-input').value = companyLine;
+                if (companyLine) {
+                    result.company = companyLine;
+                } else {
+                    result.company = lines[1]; // Fallback to second line
                 }
-
-                // 查找包含职位关键词的行作为职业
-                const titleKeywords = ['经理', '总监', '主管', '工程师', '经理', '主任', '总监', '经理', 'ceo', 'cto', 'manager', 'director', 'engineer', 'developer', 'designer', '主管', '助理', '专员'];
-                const titleLine = lines.find(line => 
-                    titleKeywords.some(keyword => line.toLowerCase().includes(keyword.toLowerCase())) &&
-                    !companyKeywords.some(keyword => line.toLowerCase().includes(keyword.toLowerCase()))
+            }
+            
+            if (!result.title && lines.length > 2) {
+                // Try to find title in lines
+                const titleKeywords = ['director', 'manager', 'engineer', 'developer', 'associate', '经理', '总监', '主管'];
+                const titleLine = lines.find((line, index) => 
+                    index > 1 && titleKeywords.some(keyword => line.toLowerCase().includes(keyword.toLowerCase()))
                 );
-                if (titleLine && !document.getElementById('title-input').value.trim()) {
-                    document.getElementById('title-input').value = titleLine;
+                if (titleLine) {
+                    result.title = titleLine;
+                } else if (lines.length > 2) {
+                    result.title = lines[2]; // Fallback to third line
                 }
+            }
+            
+            return result;
+        }
 
-                // 如果没有找到明确的公司，第二行可能是公司
-                if (!document.getElementById('company-input').value.trim() && lines.length > 1) {
-                    const secondLine = lines[1];
-                    // 如果第二行看起来不像姓名（不包含职位关键词），可能是公司
-                    if (!titleKeywords.some(keyword => secondLine.toLowerCase().includes(keyword.toLowerCase()))) {
-                        document.getElementById('company-input').value = secondLine;
-                    }
-                }
-
-                // 如果没有找到明确的职业，第三行可能是职业
-                if (!document.getElementById('title-input').value.trim() && lines.length > 2) {
-                    const thirdLine = lines[2];
-                    if (!companyKeywords.some(keyword => thirdLine.toLowerCase().includes(keyword.toLowerCase()))) {
-                        document.getElementById('title-input').value = thirdLine;
-                    }
-                }
+        function populateFieldsFromText(text) {
+            const parsedInfo = parseExtractedText(text);
+            
+            if (parsedInfo.name) {
+                document.getElementById('name-input').value = parsedInfo.name;
+            }
+            if (parsedInfo.company) {
+                document.getElementById('company-input').value = parsedInfo.company;
+            }
+            if (parsedInfo.title) {
+                document.getElementById('title-input').value = parsedInfo.title;
+            }
+            if (parsedInfo.linkedin) {
+                document.getElementById('linkedin-input').value = parsedInfo.linkedin;
+            }
+            if (parsedInfo.phone) {
+                document.getElementById('whatsapp-input').value = parsedInfo.phone;
+            }
+            if (parsedInfo.email) {
+                document.getElementById('email-input').value = parsedInfo.email;
             }
         }
 
@@ -865,161 +883,162 @@
             try {
                 startScanButton.disabled = true;
                 startScanButton.textContent = 'Scanning...';
-                statusText.textContent = 'Calling Gemini API for recognition...';
+                statusText.textContent = 'Starting OCR scan...';
                 statusBox.classList.add('show');
+                
+                // Clear previous results
+                rawResults.style.display = 'none';
+                rawResults.textContent = '';
+                clearFields();
 
                 // Use first image for scanning
                 const firstFile = selectedFiles[0];
-
-                // Call Gemini OCR through Worker API
-                const formData = new FormData();
-                formData.append('image', firstFile);
-
-                const response = await fetch(`${API_BASE}/api/gemini-ocr`, {
-                    method: 'POST',
-                    credentials: 'include',
-                    body: formData,
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({ error: `Gemini API returned status ${response.status}` }));
-                    throw new Error(errorData.error || `Gemini API returned status ${response.status}`);
-                }
-
-                // Try to parse JSON response, but handle text responses gracefully
-                let result = null;
-                const contentType = response.headers.get('content-type') || '';
                 
-                // Always read as text first, then try to parse as JSON
-                // This allows us to handle both JSON and text responses
-                const textResponse = await response.text();
-                
-                if (contentType.includes('application/json') || textResponse.trim().startsWith('{') || textResponse.trim().startsWith('[')) {
-                    // Try to parse as JSON
-                    try {
-                        result = JSON.parse(textResponse);
-                    } catch (jsonError) {
-                        console.error('Failed to parse JSON response:', jsonError);
-                        throw new Error(`Webhook returned invalid JSON. Response: ${textResponse.substring(0, 100)}`);
-                    }
-                } else {
-                    // Response is not JSON
-                    console.warn('Webhook returned non-JSON response:', textResponse);
-                    
-                    // If response is just "OK" or similar, inform user
-                    if (textResponse.trim().toUpperCase() === 'OK' || textResponse.trim() === '') {
-                        throw new Error('Webhook returned success but no data. Please configure n8n to return JSON format with contact information (e.g., {"name": "...", "company": "...", "email": "..."}).');
-                    }
-                    
-                    // Try to parse as JSON anyway (in case Content-Type is wrong)
-                    try {
-                        result = JSON.parse(textResponse);
-                    } catch (parseError) {
-                        throw new Error(`Webhook returned text instead of JSON. Please configure n8n to return JSON format. Response: ${textResponse.substring(0, 100)}`);
-                    }
-                }
-                
-                // Handle Gemini API response format
                 let extractedText = '';
-                let parsedData = null;
-                
-                if (result && result.candidates && Array.isArray(result.candidates) && result.candidates.length > 0) {
-                    // This is a Gemini API response format
-                    const candidate = result.candidates[0];
-                    if (candidate.content && candidate.content.parts && Array.isArray(candidate.content.parts) && candidate.content.parts.length > 0) {
-                        extractedText = candidate.content.parts[0].text || '';
-                    }
+                let formattedText = '';
+                let scanSuccess = false;
+
+                // Step 1: Try Gemini OCR first
+                try {
+                    statusText.textContent = 'Trying Gemini API...';
+                    startScanButton.textContent = 'Scanning (Gemini)...';
                     
-                    // Try to parse extracted text as JSON (Gemini might return JSON string)
-                    if (extractedText.trim().startsWith('{') || extractedText.trim().startsWith('[')) {
-                        try {
-                            parsedData = JSON.parse(extractedText);
-                            console.log('Parsed Gemini response as JSON:', parsedData);
-                        } catch (e) {
-                            // Not JSON, use as plain text
-                            console.log('Gemini response is plain text, not JSON');
+                    const formData = new FormData();
+                    formData.append('image', firstFile);
+
+                    const geminiResponse = await fetch(`${API_BASE}/api/gemini-ocr`, {
+                        method: 'POST',
+                        credentials: 'include',
+                        body: formData,
+                    });
+
+                    if (geminiResponse.ok) {
+                        const geminiResult = await geminiResponse.json();
+                        
+                        // Extract text from Gemini response
+                        if (geminiResult && geminiResult.candidates && Array.isArray(geminiResult.candidates) && geminiResult.candidates.length > 0) {
+                            const candidate = geminiResult.candidates[0];
+                            if (candidate.content && candidate.content.parts && Array.isArray(candidate.content.parts) && candidate.content.parts.length > 0) {
+                                extractedText = candidate.content.parts[0].text || '';
+                                scanSuccess = true;
+                                console.log('Gemini OCR success!');
+                            }
                         }
+                    }
+                } catch (geminiError) {
+                    console.error('Gemini OCR failed:', geminiError);
+                }
+
+                // Step 2: If Gemini failed, try n8n webhook
+                if (!scanSuccess || !extractedText.trim()) {
+                    try {
+                        statusText.textContent = 'Gemini failed, trying n8n webhook...';
+                        startScanButton.textContent = 'Scanning (n8n)...';
+                        
+                        // Convert image to base64
+                        const imageBase64 = await new Promise((resolve, reject) => {
+                            const reader = new FileReader();
+                            reader.onload = () => {
+                                const base64String = reader.result.split(',')[1] || reader.result;
+                                resolve(base64String);
+                            };
+                            reader.onerror = reject;
+                            reader.readAsDataURL(firstFile);
+                        });
+
+                        const webhookUrl = 'http://localhost:5678/webhook/154e7bca-11fb-4302-b08c-826758985d1e';
+                        const webhookResponse = await fetch(webhookUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                data: imageBase64,
+                                image_type: firstFile.type || 'image/jpeg',
+                            }),
+                        });
+
+                        if (webhookResponse.ok) {
+                            const webhookResult = await webhookResponse.json();
+                            
+                            // Handle Gemini response format from n8n
+                            if (webhookResult && webhookResult.candidates && Array.isArray(webhookResult.candidates) && webhookResult.candidates.length > 0) {
+                                const candidate = webhookResult.candidates[0];
+                                if (candidate.content && candidate.content.parts && Array.isArray(candidate.content.parts) && candidate.content.parts.length > 0) {
+                                    extractedText = candidate.content.parts[0].text || '';
+                                    scanSuccess = true;
+                                    console.log('n8n webhook OCR success!');
+                                }
+                            } else if (webhookResult && typeof webhookResult === 'string') {
+                                extractedText = webhookResult;
+                                scanSuccess = true;
+                            }
+                        }
+                    } catch (webhookError) {
+                        console.error('n8n webhook OCR failed:', webhookError);
                     }
                 }
-                
-                // Populate fields from webhook result
-                if (parsedData) {
-                    // Use parsed JSON data from Gemini
-                    if (parsedData.name || parsedData.full_name || parsedData.fullName) {
-                        document.getElementById('name-input').value = parsedData.name || parsedData.full_name || parsedData.fullName || '';
-                    }
-                    if (parsedData.company || parsedData.company_name || parsedData.companyName) {
-                        document.getElementById('company-input').value = parsedData.company || parsedData.company_name || parsedData.companyName || '';
-                    }
-                    if (parsedData.title || parsedData.position || parsedData.job_title || parsedData.jobTitle) {
-                        document.getElementById('title-input').value = parsedData.title || parsedData.position || parsedData.job_title || parsedData.jobTitle || '';
-                    }
-                    if (parsedData.linkedin || parsedData.linkedin_url || parsedData.linkedinUrl) {
-                        let linkedinValue = parsedData.linkedin || parsedData.linkedin_url || parsedData.linkedinUrl || '';
-                        if (linkedinValue && !linkedinValue.startsWith('http')) {
-                            linkedinValue = linkedinValue.startsWith('linkedin.com') ? `https://${linkedinValue}` : linkedinValue;
+
+                // Step 3: If both Gemini and n8n failed, use local Tesseract.js
+                if (!scanSuccess || !extractedText.trim()) {
+                    try {
+                        statusText.textContent = 'Using local OCR (Tesseract.js)...';
+                        startScanButton.textContent = 'Scanning (Local)...';
+                        
+                        const { data } = await Tesseract.recognize(firstFile, 'eng+chi_sim', {
+                            logger: m => {
+                                if (m.status === 'recognizing text') {
+                                    statusText.textContent = `Processing with local OCR... (${Math.round(m.progress * 100)}%)`;
+                                }
+                            }
+                        });
+                        
+                        if (data && data.text) {
+                            extractedText = data.text.trim();
+                            scanSuccess = true;
+                            console.log('Local OCR success!');
                         }
-                        document.getElementById('linkedin-input').value = linkedinValue;
+                    } catch (tesseractError) {
+                        console.error('Local OCR failed:', tesseractError);
                     }
-                    if (parsedData.phone || parsedData.telephone || parsedData.mobile || parsedData.whatsapp) {
-                        document.getElementById('whatsapp-input').value = parsedData.phone || parsedData.telephone || parsedData.mobile || parsedData.whatsapp || '';
-                    }
-                    if (parsedData.email || parsedData.email_address || parsedData.emailAddress) {
-                        document.getElementById('email-input').value = parsedData.email || parsedData.email_address || parsedData.emailAddress || '';
-                    }
+                }
+
+                // Process extracted text
+                if (extractedText.trim()) {
+                    // Parse and extract structured information
+                    const parsedInfo = parseExtractedText(extractedText);
                     
-                    // Display raw text in results area
-                    if (extractedText) {
-                        rawResults.textContent = extractedText;
-                        rawResults.style.display = 'block';
-                    }
+                    // Format display text
+                    formattedText = `Name: ${parsedInfo.name || ''}\nCompany: ${parsedInfo.company || ''}\nTitle: ${parsedInfo.title || ''}\nLinkedIn: ${parsedInfo.linkedin || ''}\nPhone: ${parsedInfo.phone || ''}\nEmail: ${parsedInfo.email || ''}`;
                     
-                    statusText.textContent = 'Scan completed successfully!';
-                    showToast('Scan completed! Fields have been populated from Gemini response.');
-                } else if (extractedText) {
-                    // Gemini returned plain text, use existing text parsing logic
-                    rawResults.textContent = extractedText;
+                    // Display formatted text in raw results area
+                    rawResults.textContent = formattedText;
                     rawResults.style.display = 'block';
-                    populateFieldsFromText(extractedText);
-                    statusText.textContent = 'Scan completed successfully!';
-                    showToast('Scan completed! Fields have been populated from text.');
-                } else if (result) {
-                    // Standard webhook response format (not Gemini)
-                    // Map common field names from webhook result to form fields
-                    if (result.name || result.full_name || result.fullName) {
-                        document.getElementById('name-input').value = result.name || result.full_name || result.fullName || '';
+                    
+                    // Populate form fields
+                    if (parsedInfo.name) {
+                        document.getElementById('name-input').value = parsedInfo.name;
                     }
-                    if (result.company || result.company_name || result.companyName) {
-                        document.getElementById('company-input').value = result.company || result.company_name || result.companyName || '';
+                    if (parsedInfo.company) {
+                        document.getElementById('company-input').value = parsedInfo.company;
                     }
-                    if (result.title || result.position || result.job_title || result.jobTitle) {
-                        document.getElementById('title-input').value = result.title || result.position || result.job_title || result.jobTitle || '';
+                    if (parsedInfo.title) {
+                        document.getElementById('title-input').value = parsedInfo.title;
                     }
-                    if (result.linkedin || result.linkedin_url || result.linkedinUrl) {
-                        let linkedinValue = result.linkedin || result.linkedin_url || result.linkedinUrl || '';
-                        if (linkedinValue && !linkedinValue.startsWith('http')) {
-                            linkedinValue = linkedinValue.startsWith('linkedin.com') ? `https://${linkedinValue}` : linkedinValue;
-                        }
-                        document.getElementById('linkedin-input').value = linkedinValue;
+                    if (parsedInfo.linkedin) {
+                        document.getElementById('linkedin-input').value = parsedInfo.linkedin;
                     }
-                    if (result.phone || result.telephone || result.mobile || result.whatsapp) {
-                        document.getElementById('whatsapp-input').value = result.phone || result.telephone || result.mobile || result.whatsapp || '';
+                    if (parsedInfo.phone) {
+                        document.getElementById('whatsapp-input').value = parsedInfo.phone;
                     }
-                    if (result.email || result.email_address || result.emailAddress) {
-                        document.getElementById('email-input').value = result.email || result.email_address || result.emailAddress || '';
+                    if (parsedInfo.email) {
+                        document.getElementById('email-input').value = parsedInfo.email;
                     }
-
-                    // If webhook returns raw text, also populate rawResults
-                    if (result.text || result.raw_text || result.rawText || result.ocr_text || result.ocrText) {
-                        const rawText = result.text || result.raw_text || result.rawText || result.ocr_text || result.ocrText;
-                        rawResults.textContent = rawText;
-                        rawResults.style.display = 'block';
-                    }
-
+                    
                     statusText.textContent = 'Scan completed successfully!';
                     showToast('Scan completed! Fields have been populated.');
                 } else {
-                    throw new Error('No result data from webhook');
+                    throw new Error('No text extracted from image after trying all OCR methods');
                 }
 
             } catch (error) {
