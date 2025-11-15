@@ -472,6 +472,8 @@
 
         const MAX_IMAGES = 3;
         let selectedFiles = [];
+        let isProcessingOCR = false; // Flag to prevent concurrent OCR calls
+        let ocrDebounceTimer = null; // Debounce timer for OCR calls
 
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
@@ -552,7 +554,13 @@
             
             // Only re-run OCR if new files were added
             if (hasNewFiles) {
-                runOCROnAllImages();
+                // Debounce OCR call to avoid multiple rapid calls
+                if (ocrDebounceTimer) {
+                    clearTimeout(ocrDebounceTimer);
+                }
+                ocrDebounceTimer = setTimeout(() => {
+                    runOCROnAllImages();
+                }, 300); // Wait 300ms after last file change
             }
         }
 
@@ -582,6 +590,12 @@
         }
 
         function removeImage(filename) {
+            // Prevent removal during OCR processing
+            if (isProcessingOCR) {
+                console.log('OCR processing in progress, please wait...');
+                return;
+            }
+
             selectedFiles = selectedFiles.filter(file => file.name !== filename);
             const previewItem = imagesPreviewGrid.querySelector(`[data-filename="${filename}"]`);
             if (previewItem) {
@@ -591,9 +605,13 @@
             if (selectedFiles.length === 0) {
                 imagesPreviewContainer.classList.remove('show');
                 clearFields();
+                // Clear OCR results when no images
+                rawResults.style.display = 'none';
+                rawResults.textContent = '';
             } else {
                 updateImagesCount();
-                runOCROnAllImages();
+                // Don't re-run OCR when removing images, only when adding
+                // OCR results will remain until new images are processed
             }
         }
 
@@ -602,6 +620,12 @@
         }
 
         async function runOCROnAllImages() {
+            // Prevent concurrent OCR calls
+            if (isProcessingOCR) {
+                console.log('OCR already in progress, skipping...');
+                return;
+            }
+
             if (selectedFiles.length === 0) {
                 statusBox.classList.remove('show');
                 rawResults.style.display = 'none';
@@ -609,14 +633,18 @@
                 return;
             }
 
-            statusText.textContent = 'Processing images, please wait...';
-            statusBox.classList.add('show');
-            rawResults.style.display = 'none';
-            rawResults.textContent = '';
+            // Set processing flag
+            isProcessingOCR = true;
 
-            let allText = '';
-            let completedCount = 0;
-            let useFallback = false;
+            try {
+                statusText.textContent = 'Processing images, please wait...';
+                statusBox.classList.add('show');
+                rawResults.style.display = 'none';
+                rawResults.textContent = '';
+
+                let allText = '';
+                let completedCount = 0;
+                let useFallback = false;
 
             // Try backend OCR API first
             for (let i = 0; i < selectedFiles.length; i++) {
@@ -684,14 +712,21 @@
                 }
             }
 
-            if (allText.trim()) {
-                rawResults.textContent = allText.trim();
-                rawResults.style.display = 'block';
-                populateFieldsFromText(allText);
-                statusText.textContent = `Recognition complete (${completedCount}/${selectedFiles.length} images). Please review and adjust information.`;
-            } else {
-                statusText.textContent = 'Recognition failed. Please try again or use clearer images.';
-                showToast('Recognition failed. Please check network connection or image clarity.');
+                if (allText.trim()) {
+                    rawResults.textContent = allText.trim();
+                    rawResults.style.display = 'block';
+                    populateFieldsFromText(allText);
+                    statusText.textContent = `Recognition complete (${completedCount}/${selectedFiles.length} images). Please review and adjust information.`;
+                } else {
+                    statusText.textContent = 'Recognition failed. Please try again or use clearer images.';
+                    showToast('Recognition failed. Please check network connection or image clarity.');
+                }
+            } catch (error) {
+                console.error('Unexpected error in runOCROnAllImages:', error);
+                showToast('An unexpected error occurred during OCR processing.');
+            } finally {
+                // Always reset processing flag
+                isProcessingOCR = false;
             }
         }
 
