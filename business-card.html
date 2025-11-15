@@ -189,6 +189,17 @@
             margin-top: 8px;
         }
 
+        .scan-button-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        #startScanButton:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
         .status {
             display: none;
             align-items: center;
@@ -361,6 +372,12 @@
         <div class="images-preview-container" id="imagesPreviewContainer">
             <div class="images-preview-grid" id="imagesPreviewGrid"></div>
             <div class="images-count" id="imagesCount"></div>
+        </div>
+
+        <div class="scan-button-container" id="scanButtonContainer" style="display: none; margin-bottom: 20px; text-align: center;">
+            <button class="btn btn-primary" id="startScanButton" onclick="startWebhookScan()" style="flex: 0 0 auto; padding: 12px 32px;">
+                🔍 Start Scan
+            </button>
         </div>
 
         <div class="status" id="status">
@@ -585,6 +602,11 @@
                 imagesPreviewGrid.appendChild(previewItem);
 
                 imagesPreviewContainer.classList.add('show');
+                // Show scan button when images are uploaded
+                const scanButtonContainer = document.getElementById('scanButtonContainer');
+                if (scanButtonContainer && selectedFiles.length > 0) {
+                    scanButtonContainer.style.display = 'block';
+                }
             };
             reader.readAsDataURL(file);
         }
@@ -604,11 +626,20 @@
             
             if (selectedFiles.length === 0) {
                 imagesPreviewContainer.classList.remove('show');
+                const scanButtonContainer = document.getElementById('scanButtonContainer');
+                if (scanButtonContainer) {
+                    scanButtonContainer.style.display = 'none';
+                }
                 clearFields();
                 // Clear OCR results when no images
                 rawResults.style.display = 'none';
                 rawResults.textContent = '';
             } else {
+                // Update scan button visibility
+                const scanButtonContainer = document.getElementById('scanButtonContainer');
+                if (scanButtonContainer) {
+                    scanButtonContainer.style.display = 'block';
+                }
                 updateImagesCount();
                 // Don't re-run OCR when removing images, only when adding
                 // OCR results will remain until new images are processed
@@ -638,9 +669,9 @@
 
             try {
                 statusText.textContent = 'Processing images, please wait...';
-                statusBox.classList.add('show');
-                rawResults.style.display = 'none';
-                rawResults.textContent = '';
+            statusBox.classList.add('show');
+            rawResults.style.display = 'none';
+            rawResults.textContent = '';
 
                 let allText = '';
                 let completedCount = 0;
@@ -693,13 +724,13 @@
                     const file = selectedFiles[i];
                     try {
                         statusText.textContent = `Processing image ${i + 1}/${selectedFiles.length}... (Client OCR)`;
-                        const { data } = await Tesseract.recognize(file, 'eng+chi_sim', {
-                            logger: m => {
-                                if (m.status === 'recognizing text') {
+                const { data } = await Tesseract.recognize(file, 'eng+chi_sim', {
+                    logger: m => {
+                        if (m.status === 'recognizing text') {
                                     statusText.textContent = `Processing image ${i + 1}/${selectedFiles.length}... (${Math.round(m.progress * 100)}%)`;
-                                }
-                            }
-                        });
+                        }
+                    }
+                });
 
                         if (data.text) {
                             allText += (allText ? '\n\n--- Separator ---\n\n' : '') + data.text.trim();
@@ -732,7 +763,7 @@
 
         function populateFieldsFromText(text) {
             const lines = text.split(/\r?\n/).map(line => line.trim()).filter(line => line);
-            
+
             // 邮箱匹配
             const emailMatch = text.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
             if (emailMatch) {
@@ -795,6 +826,125 @@
                         document.getElementById('title-input').value = thirdLine;
                     }
                 }
+            }
+        }
+
+        async function startWebhookScan() {
+            if (selectedFiles.length === 0) {
+                showToast('Please upload images first');
+                return;
+            }
+
+            const startScanButton = document.getElementById('startScanButton');
+            const originalText = startScanButton.textContent;
+            
+            try {
+                startScanButton.disabled = true;
+                startScanButton.textContent = 'Scanning...';
+                statusText.textContent = 'Calling webhook for recognition...';
+                statusBox.classList.add('show');
+
+                // Convert first image to base64 for webhook
+                const firstFile = selectedFiles[0];
+                const imageBase64 = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        // Remove data:image/jpeg;base64, prefix if present
+                        const base64String = reader.result.split(',')[1] || reader.result;
+                        resolve(base64String);
+                    };
+                    reader.onerror = reject;
+                    reader.readAsDataURL(firstFile);
+                });
+
+                // Call webhook through Worker API (to avoid CORS issues)
+                // If webhook is on localhost, this will fail and frontend should call directly
+                const webhookUrl = `${API_BASE}/api/webhook-scan`;
+                let response;
+                try {
+                    response = await fetch(webhookUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        credentials: 'include',
+                        body: JSON.stringify({
+                            data: imageBase64,
+                            image_type: firstFile.type || 'image/jpeg',
+                        }),
+                    });
+                } catch (workerError) {
+                    // If Worker endpoint fails (e.g., localhost webhook), try direct call
+                    console.warn('Worker webhook endpoint failed, trying direct call:', workerError);
+                    const directWebhookUrl = 'http://localhost:5678/webhook/154e7bca-11fb-4302-b08c-826758985d1e';
+                    response = await fetch(directWebhookUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            data: imageBase64,
+                            image_type: firstFile.type || 'image/jpeg',
+                        }),
+                    });
+                }
+
+                if (!response.ok) {
+                    throw new Error(`Webhook returned status ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                // Populate fields from webhook result
+                if (result) {
+                    // Map common field names from webhook result to form fields
+                    if (result.name || result.full_name || result.fullName) {
+                        document.getElementById('name-input').value = result.name || result.full_name || result.fullName || '';
+                    }
+                    if (result.company || result.company_name || result.companyName) {
+                        document.getElementById('company-input').value = result.company || result.company_name || result.companyName || '';
+                    }
+                    if (result.title || result.position || result.job_title || result.jobTitle) {
+                        document.getElementById('title-input').value = result.title || result.position || result.job_title || result.jobTitle || '';
+                    }
+                    if (result.linkedin || result.linkedin_url || result.linkedinUrl) {
+                        let linkedinValue = result.linkedin || result.linkedin_url || result.linkedinUrl || '';
+                        if (linkedinValue && !linkedinValue.startsWith('http')) {
+                            linkedinValue = linkedinValue.startsWith('linkedin.com') ? `https://${linkedinValue}` : linkedinValue;
+                        }
+                        document.getElementById('linkedin-input').value = linkedinValue;
+                    }
+                    if (result.phone || result.telephone || result.mobile || result.whatsapp) {
+                        document.getElementById('whatsapp-input').value = result.phone || result.telephone || result.mobile || result.whatsapp || '';
+                    }
+                    if (result.email || result.email_address || result.emailAddress) {
+                        document.getElementById('email-input').value = result.email || result.email_address || result.emailAddress || '';
+                    }
+
+                    // If webhook returns raw text, also populate rawResults
+                    if (result.text || result.raw_text || result.rawText || result.ocr_text || result.ocrText) {
+                        const rawText = result.text || result.raw_text || result.rawText || result.ocr_text || result.ocrText;
+                        rawResults.textContent = rawText;
+                        rawResults.style.display = 'block';
+                    }
+
+                    statusText.textContent = 'Scan completed successfully!';
+                    showToast('Scan completed! Fields have been populated.');
+                } else {
+                    throw new Error('No result data from webhook');
+                }
+
+            } catch (error) {
+                console.error('Webhook scan error:', error);
+                statusText.textContent = 'Scan failed. Please try again.';
+                showToast(`Scan failed: ${error.message}`);
+            } finally {
+                startScanButton.disabled = false;
+                startScanButton.textContent = originalText;
+                // Hide status after a delay
+                setTimeout(() => {
+                    statusBox.classList.remove('show');
+                }, 3000);
             }
         }
 

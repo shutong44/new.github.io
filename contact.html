@@ -1127,22 +1127,22 @@
 
             try {
                 const { profile } = await apiClient.updateProfile(payload);
-                const merged = profile ?? { ...profileState, ...payload };
-                if (!merged.slug && profileState.slug) merged.slug = profileState.slug;
-                hydrateProfile(merged);
-                updateProfileDisplay();
+                    const merged = profile ?? { ...profileState, ...payload };
+                    if (!merged.slug && profileState.slug) merged.slug = profileState.slug;
+                    hydrateProfile(merged);
+                    updateProfileDisplay();
                 updateShareLink();
-                closeEditModal();
+                    closeEditModal();
                 avatarUploadFile = null; // Reset upload file
                 showToast('Contact saved successfully');
             } catch (error) {
-                console.error(error);
-                const message = (error && error.message) || 'Save failed';
-                if (message.toLowerCase().includes('slug')) {
+                    console.error(error);
+                    const message = (error && error.message) || 'Save failed';
+                    if (message.toLowerCase().includes('slug')) {
                     showToast('Slug already taken, please choose another');
-                } else {
+                    } else {
                     showToast(`Save failed: ${message}`);
-                }
+                    }
             }
         }
 
