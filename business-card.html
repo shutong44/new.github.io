@@ -893,10 +893,105 @@
                     throw new Error(`Webhook returned status ${response.status}`);
                 }
 
-                const result = await response.json();
+                // Try to parse JSON response, but handle text responses gracefully
+                let result = null;
+                const contentType = response.headers.get('content-type') || '';
+                
+                // Always read as text first, then try to parse as JSON
+                // This allows us to handle both JSON and text responses
+                const textResponse = await response.text();
+                
+                if (contentType.includes('application/json') || textResponse.trim().startsWith('{') || textResponse.trim().startsWith('[')) {
+                    // Try to parse as JSON
+                    try {
+                        result = JSON.parse(textResponse);
+                    } catch (jsonError) {
+                        console.error('Failed to parse JSON response:', jsonError);
+                        throw new Error(`Webhook returned invalid JSON. Response: ${textResponse.substring(0, 100)}`);
+                    }
+                } else {
+                    // Response is not JSON
+                    console.warn('Webhook returned non-JSON response:', textResponse);
+                    
+                    // If response is just "OK" or similar, inform user
+                    if (textResponse.trim().toUpperCase() === 'OK' || textResponse.trim() === '') {
+                        throw new Error('Webhook returned success but no data. Please configure n8n to return JSON format with contact information (e.g., {"name": "...", "company": "...", "email": "..."}).');
+                    }
+                    
+                    // Try to parse as JSON anyway (in case Content-Type is wrong)
+                    try {
+                        result = JSON.parse(textResponse);
+                    } catch (parseError) {
+                        throw new Error(`Webhook returned text instead of JSON. Please configure n8n to return JSON format. Response: ${textResponse.substring(0, 100)}`);
+                    }
+                }
+                
+                // Handle Gemini API response format
+                let extractedText = '';
+                let parsedData = null;
+                
+                if (result && result.candidates && Array.isArray(result.candidates) && result.candidates.length > 0) {
+                    // This is a Gemini API response format
+                    const candidate = result.candidates[0];
+                    if (candidate.content && candidate.content.parts && Array.isArray(candidate.content.parts) && candidate.content.parts.length > 0) {
+                        extractedText = candidate.content.parts[0].text || '';
+                    }
+                    
+                    // Try to parse extracted text as JSON (Gemini might return JSON string)
+                    if (extractedText.trim().startsWith('{') || extractedText.trim().startsWith('[')) {
+                        try {
+                            parsedData = JSON.parse(extractedText);
+                            console.log('Parsed Gemini response as JSON:', parsedData);
+                        } catch (e) {
+                            // Not JSON, use as plain text
+                            console.log('Gemini response is plain text, not JSON');
+                        }
+                    }
+                }
                 
                 // Populate fields from webhook result
-                if (result) {
+                if (parsedData) {
+                    // Use parsed JSON data from Gemini
+                    if (parsedData.name || parsedData.full_name || parsedData.fullName) {
+                        document.getElementById('name-input').value = parsedData.name || parsedData.full_name || parsedData.fullName || '';
+                    }
+                    if (parsedData.company || parsedData.company_name || parsedData.companyName) {
+                        document.getElementById('company-input').value = parsedData.company || parsedData.company_name || parsedData.companyName || '';
+                    }
+                    if (parsedData.title || parsedData.position || parsedData.job_title || parsedData.jobTitle) {
+                        document.getElementById('title-input').value = parsedData.title || parsedData.position || parsedData.job_title || parsedData.jobTitle || '';
+                    }
+                    if (parsedData.linkedin || parsedData.linkedin_url || parsedData.linkedinUrl) {
+                        let linkedinValue = parsedData.linkedin || parsedData.linkedin_url || parsedData.linkedinUrl || '';
+                        if (linkedinValue && !linkedinValue.startsWith('http')) {
+                            linkedinValue = linkedinValue.startsWith('linkedin.com') ? `https://${linkedinValue}` : linkedinValue;
+                        }
+                        document.getElementById('linkedin-input').value = linkedinValue;
+                    }
+                    if (parsedData.phone || parsedData.telephone || parsedData.mobile || parsedData.whatsapp) {
+                        document.getElementById('whatsapp-input').value = parsedData.phone || parsedData.telephone || parsedData.mobile || parsedData.whatsapp || '';
+                    }
+                    if (parsedData.email || parsedData.email_address || parsedData.emailAddress) {
+                        document.getElementById('email-input').value = parsedData.email || parsedData.email_address || parsedData.emailAddress || '';
+                    }
+                    
+                    // Display raw text in results area
+                    if (extractedText) {
+                        rawResults.textContent = extractedText;
+                        rawResults.style.display = 'block';
+                    }
+                    
+                    statusText.textContent = 'Scan completed successfully!';
+                    showToast('Scan completed! Fields have been populated from Gemini response.');
+                } else if (extractedText) {
+                    // Gemini returned plain text, use existing text parsing logic
+                    rawResults.textContent = extractedText;
+                    rawResults.style.display = 'block';
+                    populateFieldsFromText(extractedText);
+                    statusText.textContent = 'Scan completed successfully!';
+                    showToast('Scan completed! Fields have been populated from text.');
+                } else if (result) {
+                    // Standard webhook response format (not Gemini)
                     // Map common field names from webhook result to form fields
                     if (result.name || result.full_name || result.fullName) {
                         document.getElementById('name-input').value = result.name || result.full_name || result.fullName || '';
