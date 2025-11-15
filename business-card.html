@@ -764,6 +764,22 @@
         function populateFieldsFromText(text) {
             const lines = text.split(/\r?\n/).map(line => line.trim()).filter(line => line);
 
+            // First, try to parse structured format (NAME: xxx, Company: xxx, etc.)
+            const nameMatch = text.match(/\b(?:NAME|姓名|名字):\s*(.+?)(?:\n|$)/i);
+            if (nameMatch) {
+                document.getElementById('name-input').value = nameMatch[1].trim();
+            }
+
+            const companyMatch = text.match(/\b(?:Company|公司|COMPANY):\s*(.+?)(?:\n|$)/i);
+            if (companyMatch) {
+                document.getElementById('company-input').value = companyMatch[1].trim();
+            }
+
+            const titleMatch = text.match(/\b(?:TITLE|职位|Title|Position|职位):\s*(.+?)(?:\n|$)/i);
+            if (titleMatch) {
+                document.getElementById('title-input').value = titleMatch[1].trim();
+            }
+
             // 邮箱匹配
             const emailMatch = text.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
             if (emailMatch) {
@@ -778,17 +794,25 @@
             }
 
             // 电话/WhatsApp匹配
-            const phoneMatch = text.match(/(\+?\d[\d\s\-()]{6,}\d)/);
+            const phoneMatch = text.match(/(?:Phone|电话|PHONE|WhatsApp|WhatsApp):\s*(.+?)(?:\n|$)/i) || text.match(/(\+?\d[\d\s\-()]{6,}\d)/);
             if (phoneMatch) {
-                document.getElementById('whatsapp-input').value = phoneMatch[0].replace(/\s+/g, ' ').trim();
+                const phoneValue = phoneMatch[1] ? phoneMatch[1].trim() : phoneMatch[0].replace(/\s+/g, ' ').trim();
+                document.getElementById('whatsapp-input').value = phoneValue;
             }
 
-            // 提取姓名、公司、职业
+            // 提取姓名、公司、职业（fallback if structured format not found）
             if (lines.length > 0) {
-                // 第一行通常是姓名
+                // 第一行通常是姓名（跳过 "text" 这样的占位符）
                 const nameInput = document.getElementById('name-input');
                 if (!nameInput.value.trim()) {
-                    nameInput.value = lines[0];
+                    // Skip common placeholder words
+                    const skipWords = ['text', 'text:', 'output', 'result'];
+                    const firstLine = lines[0];
+                    if (!skipWords.some(word => firstLine.toLowerCase().startsWith(word.toLowerCase()))) {
+                        nameInput.value = firstLine;
+                    } else if (lines.length > 1) {
+                        nameInput.value = lines[1];
+                    }
                 }
 
                 // 查找包含"公司"、"有限公司"、"股份有限公司"等的行作为公司
