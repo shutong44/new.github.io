@@ -636,7 +636,7 @@
                 <button class="btn btn-secondary" onclick="goToBusinessCard()">Scan Card</button>
                 <button class="btn btn-secondary" onclick="document.getElementById('csvUploadInput').click()">Import CSV</button>
                 <button class="btn btn-primary" onclick="exportContacts()">Export CSV</button>
-                <button class="btn btn-primary" onclick="enableAILinkedInMode()" id="aiLinkedInBtn">🤖 AI LinkedIn</button>
+                <button class="btn btn-primary" onclick="enableAILinkedInMode()" id="aiLinkedInBtn" title="Use AI to supplement LinkedIn information">🤖 AI LinkedIn</button>
                 <button class="btn btn-secondary toggle-selection-btn" onclick="addToConferenceList()" id="addConferenceListBtn">Add Conference List</button>
                 <input type="file" id="csvUploadInput" accept=".csv" style="display: none;" onchange="handleCSVUpload(event)">
             </div>
@@ -760,7 +760,7 @@
             <span id="missingLinkedInCount">0</span> contacts missing LinkedIn
         </span>
         <div style="display: flex; gap: 12px; align-items: center; flex: 1;">
-            <button type="button" class="btn btn-primary" onclick="processAILinkedIn()">
+            <button type="button" class="btn btn-primary" onclick="processAILinkedIn()" title="Use AI to supplement LinkedIn information">
                 🔍 Find LinkedIn URLs (AI)
             </button>
             <button type="button" class="btn btn-secondary" onclick="cancelAILinkedIn()">
