@@ -34,7 +34,7 @@
             padding: 0.8rem 2rem;
             text-decoration: none;
             color: #ffffff;
-            font-size: 0.95rem;
+            font-size: 1.2rem;
             font-weight: 400;
             letter-spacing: 0.1em;
             border: 2px solid #ffffff;
@@ -62,6 +62,8 @@
             color: #ffffff;
             position: relative;
             overflow: hidden;
+            padding: 2rem;
+            gap: 4rem;
         }
 
         .hero::before {
@@ -75,28 +77,65 @@
             right: -250px;
         }
 
+        .hero-container {
+            max-width: 1400px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        @media (max-width: 1024px) {
+            .hero-container {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+            }
+        }
+
+        .hero-video {
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .hero-video video {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .hero-video iframe {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            border: none;
+            border-radius: 12px;
+        }
+
         .hero-content {
-            text-align: center;
+            text-align: left;
             padding: 2rem;
-            max-width: 900px;
             position: relative;
             z-index: 1;
         }
 
         .logo {
-            font-size: 4rem;
+            font-size: 5.5rem;
             font-weight: 300;
             letter-spacing: 0.1em;
             margin-bottom: 1rem;
         }
 
         .logo sup {
-            font-size: 1.5rem;
+            font-size: 2rem;
             margin-left: 0.2rem;
         }
 
         .tagline {
-            font-size: 1.5rem;
+            font-size: 2rem;
             font-weight: 300;
             margin-bottom: 3rem;
             color: #cccccc;
@@ -104,15 +143,15 @@
         }
 
         .brand-meaning {
-            max-width: 600px;
-            margin: 0 auto 3rem;
+            max-width: 100%;
+            margin: 0 0 3rem 0;
             padding: 2rem;
             border-left: 2px solid #ffffff;
             text-align: left;
         }
 
         .brand-meaning h3 {
-            font-size: 1rem;
+            font-size: 1.4rem;
             font-weight: 500;
             margin-bottom: 1rem;
             letter-spacing: 0.1em;
@@ -120,7 +159,7 @@
         }
 
         .brand-meaning p {
-            font-size: 1rem;
+            font-size: 1.25rem;
             line-height: 1.8;
             color: #e0e0e0;
             margin-bottom: 0.5rem;
@@ -128,10 +167,11 @@
 
         .cta-button {
             display: inline-block;
-            padding: 1.2rem 3rem;
+            padding: 1.4rem 3.5rem;
             background: #ffffff;
             color: #000000;
             text-decoration: none;
+            font-size: 1.1rem;
             font-weight: 500;
             letter-spacing: 0.1em;
             transition: all 0.3s ease;
@@ -156,14 +196,14 @@
         }
 
         .section-title {
-            font-size: 3rem;
+            font-size: 4rem;
             font-weight: 300;
             margin-bottom: 2rem;
             letter-spacing: 0.05em;
         }
 
         .section-content {
-            font-size: 1.2rem;
+            font-size: 1.5rem;
             line-height: 1.9;
             color: #333333;
             max-width: 800px;
@@ -189,21 +229,21 @@
         }
 
         .feature-number {
-            font-size: 0.9rem;
+            font-size: 1.2rem;
             color: #888888;
             margin-bottom: 1rem;
             letter-spacing: 0.1em;
         }
 
         .feature-title {
-            font-size: 1.5rem;
+            font-size: 2rem;
             font-weight: 500;
             margin-bottom: 1rem;
             letter-spacing: 0.02em;
         }
 
         .feature-description {
-            font-size: 1rem;
+            font-size: 1.25rem;
             line-height: 1.8;
             color: #cccccc;
             margin-bottom: 1.5rem;
@@ -217,7 +257,7 @@
         .feature-list li {
             padding: 0.3rem 0;
             color: #aaaaaa;
-            font-size: 0.95rem;
+            font-size: 1.15rem;
         }
 
         .feature-list li::before {
@@ -245,12 +285,12 @@
         }
 
         .standout-icon {
-            font-size: 3rem;
+            font-size: 4rem;
             margin-bottom: 1rem;
         }
 
         .standout-text {
-            font-size: 1.1rem;
+            font-size: 1.4rem;
             line-height: 1.7;
             color: #333333;
         }
@@ -264,14 +304,14 @@
         }
 
         .final-cta h2 {
-            font-size: 3.5rem;
+            font-size: 4.5rem;
             font-weight: 300;
             margin-bottom: 2rem;
             letter-spacing: 0.05em;
         }
 
         .final-cta p {
-            font-size: 1.3rem;
+            font-size: 1.6rem;
             max-width: 800px;
             margin: 0 auto 3rem;
             color: #cccccc;
@@ -287,23 +327,23 @@
 
             .nav-item {
                 padding: 0.6rem 1.2rem;
-                font-size: 0.85rem;
+                font-size: 1rem;
             }
 
             .logo {
-                font-size: 2.5rem;
+                font-size: 3.5rem;
             }
 
             .tagline {
-                font-size: 1.2rem;
+                font-size: 1.5rem;
             }
 
             .section-title {
-                font-size: 2rem;
+                font-size: 2.5rem;
             }
 
             .final-cta h2 {
-                font-size: 2.2rem;
+                font-size: 3rem;
             }
 
             .features-grid {
@@ -328,7 +368,7 @@
             left: 50%;
             transform: translateX(-50%);
             color: #888888;
-            font-size: 0.9rem;
+            font-size: 1.1rem;
             letter-spacing: 0.15em;
             animation: bounce 2s infinite;
         }
@@ -355,20 +395,31 @@
 
     <!-- Hero Section -->
     <section class="hero">
-        <div class="hero-content">
-            <h1 class="logo">Confera<sup>°</sup></h1>
-            <p class="tagline">Smart Business Card & Contact Management Platform</p>
-            
-            <div class="brand-meaning">
-                <h3>Redefining the Conference Networking Era</h3>
-                <p><strong>Confe</strong> — Conference</p>
-                <p><strong>Era</strong> — A new era, a new way of connecting</p>
-                <p style="margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 1.5rem;">
-                    A new era of seamless, intelligent, and intentional networking, designed for modern professionals who transform every conference interaction into lasting value.
-                </p>
+        <div class="hero-container">
+            <!-- Video Section (Left) -->
+            <div class="hero-video">
+                <video controls autoplay muted loop playsinline>
+                    <source src="grok-video-f57fc3ca-20cb-4180-b8b3-e68978498653.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
             </div>
             
-            <a href="#features" class="cta-button">EXPLORE</a>
+            <!-- Content Section (Right) -->
+            <div class="hero-content">
+                <h1 class="logo">Confera<sup>°</sup></h1>
+                <p class="tagline">Smart Business Card & Contact Management Platform</p>
+                
+                <div class="brand-meaning">
+                    <h3>Redefining the Conference Networking Era</h3>
+                    <p><strong>Confe</strong> — Conference</p>
+                    <p><strong>Era</strong> — A new era, a new way of connecting</p>
+                    <p style="margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 1.5rem;">
+                        A new era of seamless, intelligent, and intentional networking, designed for modern professionals who transform every conference interaction into lasting value.
+                    </p>
+                </div>
+                
+                <a href="#features" class="cta-button">EXPLORE</a>
+            </div>
         </div>
         <div class="scroll-indicator">SCROLL</div>
     </section>
