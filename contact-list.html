@@ -251,7 +251,7 @@
         @media (max-width: 768px) {
             .contacts-grid {
                 grid-template-columns: 1fr;
-            }
+        }
         }
 
         .contact-card {
@@ -932,7 +932,7 @@
                     checkbox.onchange = (e) => {
                         e.stopPropagation();
                         toggleContactSelection(contact.id, checkbox);
-                    };
+                };
                     card.appendChild(checkbox);
                 }
                 
@@ -1097,11 +1097,11 @@
                     e.stopPropagation();
                     deleteContact(contact.id);
                 };
-                
+
                 actions.appendChild(editBtn);
                 actions.appendChild(deleteBtn);
                 card.appendChild(actions);
-                
+
                 grid.appendChild(card);
             });
         }

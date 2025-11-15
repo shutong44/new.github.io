@@ -796,7 +796,7 @@
                 let value = linkedinMatch[1] ? linkedinMatch[1].trim() : linkedinMatch[0];
                 if (!value.startsWith('http')) {
                     value = value.startsWith('linkedin.com') ? `https://${value}` : `https://${value.replace(/^\/\//, '')}`;
-                }
+            }
                 result.linkedin = value;
             }
 
@@ -975,7 +975,7 @@
                                     extractedText = candidate.content.parts[0].text || '';
                                     scanSuccess = true;
                                     console.log('n8n webhook OCR success!');
-                                }
+            }
                             } else if (webhookResult && typeof webhookResult === 'string') {
                                 extractedText = webhookResult;
                                 scanSuccess = true;
