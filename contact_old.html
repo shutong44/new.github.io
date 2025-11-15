@@ -13,7 +13,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -38,7 +38,7 @@
         }
 
         .edit-btn {
-            background: #667eea;
+            background: #000000;
             color: white;
             border: none;
             padding: 10px 25px;
@@ -54,7 +54,7 @@
         .edit-btn:hover {
             background: #5568d3;
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
         }
 
         .edit-btn:active {
@@ -86,7 +86,7 @@
             padding: 14px 18px;
             border-radius: 12px;
             background: #f6f7ff;
-            border: 1px solid rgba(102, 126, 234, 0.2);
+            border: 1px solid rgba(0, 0, 0, 0.2);
             margin-bottom: 24px;
         }
 
@@ -96,7 +96,7 @@
 
         .share-label {
             font-size: 12px;
-            color: #667eea;
+            color: #000000;
             letter-spacing: 0.3px;
             text-transform: uppercase;
         }
@@ -112,7 +112,7 @@
             padding: 10px 16px;
             border-radius: 8px;
             border: none;
-            background: #667eea;
+            background: #000000;
             color: #fff;
             font-weight: 600;
             cursor: pointer;
@@ -128,7 +128,7 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: rgba(102, 126, 234, 0.12);
+            background: rgba(0, 0, 0, 0.12);
             color: #5568d3;
             padding: 6px 14px;
             border-radius: 999px;
@@ -188,8 +188,8 @@
 
         .modal-content textarea:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: #000000;
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
         }
 
         .modal-content select {
@@ -204,8 +204,8 @@
 
         .modal-content select:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: #000000;
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
         }
 
         .modal-header {
@@ -239,8 +239,8 @@
 
         .form-input:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: #000000;
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
         }
 
         .modal-buttons {
@@ -261,7 +261,7 @@
         }
 
         .btn-primary {
-            background: #667eea;
+            background: #000000;
             color: white;
         }
 
@@ -293,7 +293,7 @@
         .contact-item:hover {
             transform: translateY(-3px);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            border-color: #667eea;
+            border-color: #000000;
         }
 
         .contact-item:active {
@@ -507,7 +507,7 @@
             <div id="contactsList" style="display: flex; flex-direction: column; gap: 12px;"></div>
             <div style="margin-top: 20px; display: flex; gap: 10px;">
                 <button class="btn btn-secondary" style="background: #f0f0f0; color: #666;" onclick="closeContactsModal()">关闭</button>
-                <button class="btn btn-primary" style="background: #667eea; color: white;" onclick="openContactsPage()">查看完整列表</button>
+                <button class="btn btn-primary" style="background: #000000; color: white;" onclick="openContactsPage()">查看完整列表</button>
             </div>
         </div>
     </div>
@@ -964,7 +964,7 @@
                 const more = document.createElement('div');
                 more.style.textAlign = 'center';
                 more.style.fontSize = '13px';
-                more.style.color = '#667eea';
+                more.style.color = '#000000';
                 more.textContent = `还有 ${contacts.length - 5} 位联系人，点击“查看完整列表”查看更多`;
                 container.appendChild(more);
             }
