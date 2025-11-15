@@ -1016,7 +1016,15 @@
         }
 
         function goToContactList() {
-            window.location.href = 'contact-list.html';
+            // If we're viewing a specific conference, go back to conference list
+            // Otherwise go to contact list
+            const urlParams = new URLSearchParams(window.location.search);
+            const conferenceName = urlParams.get('name');
+            if (conferenceName) {
+                window.location.href = 'conference.html';
+            } else {
+                window.location.href = 'contact-list.html';
+            }
         }
 
         function openDetailModal(contactId) {

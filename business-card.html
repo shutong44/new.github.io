@@ -410,7 +410,8 @@
     <div class="toast" id="toast"></div>
 
     <script src="api-client.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <!-- Tesseract.js kept as fallback option -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script> -->
     <script>
         const DEFAULT_REMOTE_BASE = 'https://cloudflare-worker-google-oauth.wangshutong774.workers.dev';
         const pageOrigin = window.location.origin;
@@ -620,20 +621,33 @@
                 const file = selectedFiles[i];
                 try {
                     statusText.textContent = `Processing image ${i + 1}/${selectedFiles.length}...`;
-                    const { data } = await Tesseract.recognize(file, 'eng+chi_sim', {
-                        logger: m => {
-                            if (m.status === 'recognizing text') {
-                                statusText.textContent = `Processing image ${i + 1}/${selectedFiles.length}... (${Math.round(m.progress * 100)}%)`;
-                            }
-                        }
+                    
+                    // Use backend OCR API (Cloudflare Workers AI)
+                    const formData = new FormData();
+                    formData.append('image', file);
+                    
+                    const response = await fetch(`${API_BASE}/api/ocr`, {
+                        method: 'POST',
+                        credentials: 'include',
+                        body: formData,
                     });
-
-                    if (data.text) {
-                        allText += (allText ? '\n\n--- Separator ---\n\n' : '') + data.text.trim();
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(errorData.error || `HTTP ${response.status}`);
+                    }
+                    
+                    const result = await response.json();
+                    
+                    if (result.text && result.text.trim()) {
+                        allText += (allText ? '\n\n--- Separator ---\n\n' : '') + result.text.trim();
                     }
                     completedCount++;
+                    
+                    statusText.textContent = `Processed ${completedCount}/${selectedFiles.length} images...`;
                 } catch (error) {
                     console.error(`Error recognizing image ${i + 1}:`, error);
+                    showToast(`Error processing image ${i + 1}: ${error.message}`);
                 }
             }
 
