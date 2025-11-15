@@ -410,8 +410,8 @@
     <div class="toast" id="toast"></div>
 
     <script src="api-client.js"></script>
-    <!-- Tesseract.js kept as fallback option -->
-    <!-- <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script> -->
+    <!-- Tesseract.js as fallback OCR option -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script>
         const DEFAULT_REMOTE_BASE = 'https://cloudflare-worker-google-oauth.wangshutong774.workers.dev';
         const pageOrigin = window.location.origin;
@@ -616,13 +616,15 @@
 
             let allText = '';
             let completedCount = 0;
+            let useFallback = false;
 
+            // Try backend OCR API first
             for (let i = 0; i < selectedFiles.length; i++) {
                 const file = selectedFiles[i];
                 try {
-                    statusText.textContent = `Processing image ${i + 1}/${selectedFiles.length}...`;
+                    statusText.textContent = `Processing image ${i + 1}/${selectedFiles.length}... (Server OCR)`;
                     
-                    // Use backend OCR API (Cloudflare Workers AI)
+                    // Use backend OCR API (Cloudflare Workers AI / Hugging Face)
                     const formData = new FormData();
                     formData.append('image', file);
                     
@@ -633,38 +635,51 @@
                     });
                     
                     if (!response.ok) {
-                        let errorMessage = `HTTP ${response.status}`;
-                        try {
-                            const errorData = await response.json();
-                            errorMessage = errorData.error || errorData.message || errorMessage;
-                        } catch (e) {
-                            // If response is not JSON, get text instead
-                            try {
-                                const errorText = await response.text();
-                                errorMessage = errorText || errorMessage;
-                            } catch (e2) {
-                                // Ignore
-                            }
-                        }
-                        throw new Error(errorMessage);
+                        throw new Error(`Server OCR failed: ${response.status}`);
                     }
                     
                     const result = await response.json();
                     
                     if (result.text && result.text.trim()) {
                         allText += (allText ? '\n\n--- Separator ---\n\n' : '') + result.text.trim();
-                    }
-                    completedCount++;
-                    
-                    statusText.textContent = `Processed ${completedCount}/${selectedFiles.length} images...`;
-                } catch (error) {
-                    console.error(`Error recognizing image ${i + 1}:`, error);
-                    const errorMsg = error.message || 'Unknown error';
-                    // Prevent infinite recursion by not showing toast if error message is too long or contains stack trace
-                    if (!errorMsg.includes('Maximum call stack size') && errorMsg.length < 500) {
-                        showToast(`Error processing image ${i + 1}: ${errorMsg.substring(0, 100)}`);
+                        completedCount++;
+                        statusText.textContent = `Processed ${completedCount}/${selectedFiles.length} images...`;
                     } else {
-                        showToast(`Error processing image ${i + 1}. Check console for details.`);
+                        throw new Error('No text extracted from server OCR');
+                    }
+                } catch (error) {
+                    console.error(`Server OCR failed for image ${i + 1}:`, error);
+                    useFallback = true;
+                    break; // If any image fails, use fallback for all
+                }
+            }
+
+            // Fallback to Tesseract.js if server OCR fails
+            if (useFallback || completedCount === 0) {
+                console.log('Switching to Tesseract.js fallback OCR...');
+                statusText.textContent = 'Server OCR unavailable, using client-side OCR...';
+                allText = '';
+                completedCount = 0;
+
+                for (let i = 0; i < selectedFiles.length; i++) {
+                    const file = selectedFiles[i];
+                    try {
+                        statusText.textContent = `Processing image ${i + 1}/${selectedFiles.length}... (Client OCR)`;
+                        const { data } = await Tesseract.recognize(file, 'eng+chi_sim', {
+                            logger: m => {
+                                if (m.status === 'recognizing text') {
+                                    statusText.textContent = `Processing image ${i + 1}/${selectedFiles.length}... (${Math.round(m.progress * 100)}%)`;
+                                }
+                            }
+                        });
+
+                        if (data.text) {
+                            allText += (allText ? '\n\n--- Separator ---\n\n' : '') + data.text.trim();
+                        }
+                        completedCount++;
+                    } catch (error) {
+                        console.error(`Error recognizing image ${i + 1} with Tesseract:`, error);
+                        showToast(`Error processing image ${i + 1}: ${error.message}`);
                     }
                 }
             }
