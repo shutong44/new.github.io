@@ -841,56 +841,25 @@
             try {
                 startScanButton.disabled = true;
                 startScanButton.textContent = 'Scanning...';
-                statusText.textContent = 'Calling webhook for recognition...';
+                statusText.textContent = 'Calling Gemini API for recognition...';
                 statusBox.classList.add('show');
 
-                // Convert first image to base64 for webhook
+                // Use first image for scanning
                 const firstFile = selectedFiles[0];
-                const imageBase64 = await new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = () => {
-                        // Remove data:image/jpeg;base64, prefix if present
-                        const base64String = reader.result.split(',')[1] || reader.result;
-                        resolve(base64String);
-                    };
-                    reader.onerror = reject;
-                    reader.readAsDataURL(firstFile);
+
+                // Call Gemini OCR through Worker API
+                const formData = new FormData();
+                formData.append('image', firstFile);
+
+                const response = await fetch(`${API_BASE}/api/gemini-ocr`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData,
                 });
 
-                // Call webhook through Worker API (to avoid CORS issues)
-                // If webhook is on localhost, this will fail and frontend should call directly
-                const webhookUrl = `${API_BASE}/api/webhook-scan`;
-                let response;
-                try {
-                    response = await fetch(webhookUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        credentials: 'include',
-                        body: JSON.stringify({
-                            data: imageBase64,
-                            image_type: firstFile.type || 'image/jpeg',
-                        }),
-                    });
-                } catch (workerError) {
-                    // If Worker endpoint fails (e.g., localhost webhook), try direct call
-                    console.warn('Worker webhook endpoint failed, trying direct call:', workerError);
-                    const directWebhookUrl = 'http://localhost:5678/webhook/154e7bca-11fb-4302-b08c-826758985d1e';
-                    response = await fetch(directWebhookUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            data: imageBase64,
-                            image_type: firstFile.type || 'image/jpeg',
-                        }),
-                    });
-                }
-
                 if (!response.ok) {
-                    throw new Error(`Webhook returned status ${response.status}`);
+                    const errorData = await response.json().catch(() => ({ error: `Gemini API returned status ${response.status}` }));
+                    throw new Error(errorData.error || `Gemini API returned status ${response.status}`);
                 }
 
                 // Try to parse JSON response, but handle text responses gracefully
