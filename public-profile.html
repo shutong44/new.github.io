@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>名片资料</title>
     <style>
         * {
@@ -13,266 +16,402 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #5335cf 0%, #8f6ed5 100%);
+            background: #f8fafc;
             min-height: 100vh;
+            padding: 0;
+            color: #1a202c;
+        }
+
+        .header-section {
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: white;
             display: flex;
             align-items: center;
-            justify-content: center;
-            padding: 20px;
-            color: #fff;
+            gap: 12px;
         }
 
         .container {
-            width: 100%;
-            max-width: 480px;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 24px;
+            background: white;
+            border-radius: 12px;
+            margin-top: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
         }
 
-        .card {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 24px;
-            padding: 36px 32px;
-            box-shadow: 0 30px 80px rgba(15, 10, 60, 0.35);
-            backdrop-filter: blur(12px);
-        }
-
-        .avatar {
-            width: 100px;
-            height: 100px;
+        /* Profile Photo */
+        .profile-photo {
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
-            margin: 0 auto 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0 auto 24px;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 36px;
-            color: #fff;
             overflow: hidden;
+            border: 4px solid white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
-        .avatar img {
+        .profile-photo img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
 
-        h1 {
+        .profile-photo-placeholder {
+            font-size: 48px;
+            color: white;
+        }
+
+        /* Profile Info */
+        .profile-info {
             text-align: center;
-            font-size: 26px;
-            margin-bottom: 6px;
+            margin-bottom: 30px;
+        }
+
+        .profile-name {
+            font-size: 28px;
             font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 8px;
         }
 
-        .title {
-            text-align: center;
-            font-size: 16px;
-            color: rgba(255, 255, 255, 0.75);
-            margin-bottom: 16px;
-        }
-
-        .visibility-pill {
-            display: inline-flex;
+        .info-item {
+            display: flex;
             align-items: center;
-            gap: 6px;
-            background: rgba(255, 255, 255, 0.2);
-            color: #fff;
-            padding: 6px 16px;
-            border-radius: 999px;
-            font-size: 12px;
-            font-weight: 600;
-            letter-spacing: 0.4px;
-            margin: 0 auto 20px;
-            display: none;
+            justify-content: center;
+            gap: 8px;
+            margin: 6px 0;
+            color: #475569;
+            font-size: 14px;
         }
 
-        .visibility-pill[data-variant="approval_required"] {
-            background: rgba(255, 193, 7, 0.3);
-        }
-
-        .visibility-pill[data-variant="private"] {
-            background: rgba(244, 67, 54, 0.3);
+        .info-item-icon {
+            width: 18px;
+            height: 18px;
+            opacity: 0.7;
+            color: #64748b;
         }
 
         .bio {
             text-align: center;
+            color: #475569;
             font-size: 15px;
             line-height: 1.6;
-            color: rgba(255, 255, 255, 0.85);
-            margin-bottom: 24px;
+            margin: 20px 0;
+            padding: 16px;
+            background: #f8fafc;
+            border-radius: 12px;
             white-space: pre-wrap;
+            border: 1px solid #e2e8f0;
         }
 
-        .actions {
+        /* Contact Icons */
+        .contact-icons {
             display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-bottom: 30px;
+            justify-content: center;
+            gap: 16px;
+            margin: 24px 0;
+            flex-wrap: wrap;
         }
 
-        .btn {
+        .contact-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .contact-icon:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .contact-icon.linkedin {
+            background: #0077b5;
+        }
+
+        .contact-icon.whatsapp {
+            background: #25d366;
+        }
+
+        .contact-icon.email {
+            background: #ea4335;
+        }
+
+        .contact-icon.website {
+            background: #4285f4;
+        }
+
+        .contact-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+
+        /* Contact Buttons */
+        .contact-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin: 24px 0;
+        }
+
+        .contact-btn {
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .contact-btn.linkedin {
+            background: #0077b5;
+            color: white;
+        }
+
+        .contact-btn.whatsapp {
+            background: #25d366;
+            color: white;
+        }
+
+        .contact-btn.email {
+            background: #ea4335;
+            color: white;
+        }
+
+        .contact-btn.website {
+            background: #4285f4;
+            color: white;
+        }
+
+        .contact-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Save Button */
+        .save-section {
+            margin: 30px 0;
+            padding-top: 24px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .save-btn {
+            width: 100%;
             padding: 14px;
             border-radius: 12px;
             border: none;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            transition: all 0.2s ease;
+            background: #1a202c;
+            color: white;
         }
 
-        .btn-primary {
-            background: #ff7a7a;
-            color: #fff;
-            box-shadow: 0 10px 35px rgba(255, 122, 122, 0.35);
-        }
-
-        .btn-primary:hover {
+        .save-btn:hover {
+            background: #2d3748;
             transform: translateY(-2px);
-            box-shadow: 0 14px 40px rgba(255, 122, 122, 0.45);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.2);
-            color: #fff;
-        }
-
-        .contact-list {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-
-        .contact-item {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            padding: 12px 14px;
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.12);
-            cursor: pointer;
-            transition: background 0.2s ease, transform 0.2s ease;
-        }
-
-        .contact-item:hover {
-            background: rgba(255, 255, 255, 0.18);
-            transform: translateY(-1px);
-        }
-
-        .contact-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .contact-text {
-            flex: 1;
-        }
-
-        .contact-label {
-            font-size: 12px;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 4px;
-        }
-
-        .contact-value {
-            font-size: 15px;
-            color: #fff;
-            word-break: break-all;
-        }
-
-        .notice {
-            text-align: center;
-            font-size: 13px;
-            color: rgba(255, 255, 255, 0.75);
-            margin-top: 12px;
+        .save-btn:disabled {
+            background: #cbd5e1;
+            color: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
         }
 
         .toast {
             position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translate(-50%, 100%);
-            background: rgba(0, 0, 0, 0.7);
-            color: #fff;
-            padding: 12px 24px;
-            border-radius: 999px;
-            font-size: 14px;
+            top: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
             opacity: 0;
-            transition: transform 0.3s ease, opacity 0.3s ease;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
             z-index: 2000;
         }
 
         .toast.show {
-            transform: translate(-50%, 0);
             opacity: 1;
+            transform: translateY(0);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .info-item a {
+            color: #2563eb;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .info-item a:hover {
+            text-decoration: underline;
+            color: #1d4ed8;
         }
 
         .empty-state {
             text-align: center;
             font-size: 16px;
             padding: 60px 40px;
-            color: rgba(255, 255, 255, 0.85);
-            background: rgba(255, 255, 255, 0.08);
+            color: #64748b;
+            background: #f8fafc;
             border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(15, 10, 60, 0.25);
+            margin: 24px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="card" id="profile-card">
-            <div class="avatar" id="profile-avatar"></div>
-            <h1 id="profile-name">正在加载...</h1>
-            <div class="title" id="profile-title"></div>
-            <div class="visibility-pill" id="profile-visibility">公开模式</div>
-            <div class="bio" id="profile-bio"></div>
+    <div class="header-section">
+        <div class="header-content">
+            <h1>👤 名片资料</h1>
+        </div>
+    </div>
 
-            <div class="actions">
-                <button class="btn btn-primary" onclick="saveContact()" id="save-button">
-                    保存到我的联系人
-                </button>
-                <button class="btn btn-secondary" onclick="copyShareLink()">
-                    复制分享链接
-                </button>
+    <div class="container" id="profile-container">
+        <!-- Profile Photo -->
+        <div class="profile-photo" id="profile-photo">
+            <div class="profile-photo-placeholder">👤</div>
+        </div>
+
+        <!-- Profile Info -->
+        <div class="profile-info">
+            <div class="profile-name" id="profile-name">Loading...</div>
+            
+            <div class="info-item" id="title-item" style="display: none;">
+                <span id="title-text"></span>
             </div>
 
-            <div class="contact-list">
-                <div class="contact-item" id="linkedin-item" onclick="openLinkedIn()" style="display: none;">
-                    <div class="contact-icon">in</div>
-                    <div class="contact-text">
-                        <div class="contact-label">LinkedIn</div>
-                        <div class="contact-value" id="linkedin-value"></div>
-                    </div>
-                </div>
-                <div class="contact-item" id="whatsapp-item" onclick="openWhatsApp()" style="display: none;">
-                    <div class="contact-icon">💬</div>
-                    <div class="contact-text">
-                        <div class="contact-label">WhatsApp</div>
-                        <div class="contact-value" id="whatsapp-value"></div>
-                    </div>
-                </div>
-                <div class="contact-item" id="email-item" onclick="openEmail()" style="display: none;">
-                    <div class="contact-icon">✉️</div>
-                    <div class="contact-text">
-                        <div class="contact-label">Email</div>
-                        <div class="contact-value" id="email-value"></div>
-                    </div>
-                </div>
+            <div class="info-item" id="location-item" style="display: none;">
+                <svg class="info-item-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                </svg>
+                <span id="location-text"></span>
             </div>
 
-            <div class="notice" id="approval-notice" style="display: none;">
-                此联系人需要对方审批后才能查看完整信息。
+            <div class="info-item" id="company-item" style="display: none;">
+                <svg class="info-item-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/>
+                </svg>
+                <span id="company-text"></span>
+            </div>
+
+            <div class="info-item" id="company-website-item" style="display: none;">
+                <svg class="info-item-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM18.92 8h-2.95c-.32-1.25-.78-2.45-1.38-3.56 1.84.63 3.37 1.91 4.33 3.56zM12 4.04c.83 1.2 1.48 2.53 1.91 3.96h-3.82c.43-1.43 1.08-2.76 1.91-3.96zM4.26 14C4.1 13.36 4 12.69 4 12s.1-1.36.26-2h3.38c-.08.66-.14 1.32-.14 2 0 .68.06 1.34.14 2H4.26zm.82 2h2.95c.32 1.25.78 2.45 1.38 3.56-1.84-.63-3.37-1.9-4.33-3.56zM8.03 8H5.08c.96-1.66 2.49-2.93 4.33-3.56C8.81 5.55 8.35 6.75 8.03 8zM12 19.96c-.83-1.2-1.48-2.53-1.91-3.96h3.82c-.43 1.43-1.08 2.76-1.91 3.96zM14.34 14H9.66c-.09-.66-.16-1.32-.16-2 0-.68.07-1.35.16-2h4.68c.09.65.16 1.32.16 2 0 .68-.07 1.34-.16 2zm.25 5.56c.6-1.11 1.06-2.31 1.38-3.56h2.95c-.96 1.65-2.49 2.93-4.33 3.56zM16.36 14c.08-.66.14-1.32.14-2 0-.68-.06-1.34-.14-2h3.38c.16.64.26 1.31.26 2s-.1 1.36-.26 2h-3.38z"/>
+                </svg>
+                <a href="#" id="company-website-link" target="_blank">Visit Website</a>
+            </div>
+
+            <div class="info-item" id="school-item" style="display: none;">
+                <svg class="info-item-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/>
+                </svg>
+                <span id="school-text"></span>
             </div>
         </div>
 
-        <div class="empty-state" id="empty-state" style="display: none;">
-            暂未找到该名片信息，可能链接已失效或被设为私密。
+        <!-- Bio -->
+        <div class="bio" id="bio" style="display: none;"></div>
+
+        <!-- Contact Icons (Clickable) -->
+        <div class="contact-icons">
+            <div class="contact-icon linkedin" id="linkedin-icon" onclick="openLinkedIn()" style="display: none;">
+                <svg viewBox="0 0 24 24">
+                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                </svg>
+            </div>
+            <div class="contact-icon whatsapp" id="whatsapp-icon" onclick="openWhatsApp()" style="display: none;">
+                <svg viewBox="0 0 24 24">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                </svg>
+            </div>
+            <div class="contact-icon email" id="email-icon" onclick="openEmail()" style="display: none;">
+                <svg viewBox="0 0 24 24">
+                    <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                </svg>
+            </div>
+            <div class="contact-icon website" id="website-icon" onclick="openWebsite()" style="display: none;">
+                <svg viewBox="0 0 24 24">
+                    <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM18.92 8h-2.95c-.32-1.25-.78-2.45-1.38-3.56 1.84.63 3.37 1.91 4.33 3.56zM12 4.04c.83 1.2 1.48 2.53 1.91 3.96h-3.82c.43-1.43 1.08-2.76 1.91-3.96zM4.26 14C4.1 13.36 4 12.69 4 12s.1-1.36.26-2h3.38c-.08.66-.14 1.32-.14 2 0 .68.06 1.34.14 2H4.26zm.82 2h2.95c.32 1.25.78 2.45 1.38 3.56-1.84-.63-3.37-1.9-4.33-3.56zM8.03 8H5.08c.96-1.66 2.49-2.93 4.33-3.56C8.81 5.55 8.35 6.75 8.03 8zM12 19.96c-.83-1.2-1.48-2.53-1.91-3.96h3.82c-.43 1.43-1.08 2.76-1.91 3.96zM14.34 14H9.66c-.09-.66-.16-1.32-.16-2 0-.68.07-1.35.16-2h4.68c.09.65.16 1.32.16 2 0 .68-.07 1.34-.16 2zm.25 5.56c.6-1.11 1.06-2.31 1.38-3.56h2.95c-.96 1.65-2.49 2.93-4.33 3.56zM16.36 14c.08-.66.14-1.32.14-2 0-.68-.06-1.34-.14-2h3.38c.16.64.26 1.31.26 2s-.1 1.36-.26 2h-3.38z"/>
+                </svg>
+            </div>
         </div>
+
+        <!-- Contact Buttons -->
+        <div class="contact-buttons">
+            <button class="contact-btn linkedin" id="linkedin-btn" onclick="openLinkedIn()" style="display: none;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                </svg>
+                LinkedIn
+            </button>
+            <button class="contact-btn whatsapp" id="whatsapp-btn" onclick="openWhatsApp()" style="display: none;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                </svg>
+                WhatsApp
+            </button>
+            <button class="contact-btn email" id="email-btn" onclick="openEmail()" style="display: none;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                </svg>
+                Email
+            </button>
+            <button class="contact-btn website" id="website-btn" onclick="openWebsite()" style="display: none;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM18.92 8h-2.95c-.32-1.25-.78-2.45-1.38-3.56 1.84.63 3.37 1.91 4.33 3.56zM12 4.04c.83 1.2 1.48 2.53 1.91 3.96h-3.82c.43-1.43 1.08-2.76 1.91-3.96zM4.26 14C4.1 13.36 4 12.69 4 12s.1-1.36.26-2h3.38c-.08.66-.14 1.32-.14 2 0 .68.06 1.34.14 2H4.26zm.82 2h2.95c.32 1.25.78 2.45 1.38 3.56-1.84-.63-3.37-1.9-4.33-3.56zM8.03 8H5.08c.96-1.66 2.49-2.93 4.33-3.56C8.81 5.55 8.35 6.75 8.03 8zM12 19.96c-.83-1.2-1.48-2.53-1.91-3.96h3.82c-.43 1.43-1.08 2.76-1.91 3.96zM14.34 14H9.66c-.09-.66-.16-1.32-.16-2 0-.68.07-1.35.16-2h4.68c.09.65.16 1.32.16 2 0 .68-.07 1.34-.16 2zm.25 5.56c.6-1.11 1.06-2.31 1.38-3.56h2.95c-.96 1.65-2.49 2.93-4.33 3.56zM16.36 14c.08-.66.14-1.32.14-2 0-.68-.06-1.34-.14-2h3.38c.16.64.26 1.31.26 2s-.1 1.36-.26 2h-3.38z"/>
+                </svg>
+                Website
+            </button>
+        </div>
+
+        <!-- Save Button -->
+        <div class="save-section">
+            <button class="save-btn" id="save-button" onclick="saveContact()">
+                💾 保存到我的联系人
+            </button>
+        </div>
+    </div>
+
+    <div class="empty-state" id="empty-state" style="display: none;">
+        暂未找到该名片信息，可能链接已失效或被设为私密。
     </div>
 
     <div class="toast" id="toast"></div>
@@ -377,87 +516,129 @@
 
         function renderProfile() {
             if (!profileData) return;
+
+            // Name
             document.getElementById('profile-name').textContent =
                 profileData.displayName || '未命名联系人';
-            const titleEl = document.getElementById('profile-title');
-            titleEl.textContent = profileData.title || '';
-            titleEl.style.display = profileData.title ? 'block' : 'none';
 
-            const visibilityEl = document.getElementById('profile-visibility');
-            const visibilityLabels = {
-                public: '公开模式',
-                approval_required: '需审批',
-                private: '仅本人',
-            };
-            const variant = profileData.visibility || 'public';
-            visibilityEl.dataset.variant = variant;
-            visibilityEl.textContent = visibilityLabels[variant] || '公开模式';
-            visibilityEl.style.display = variant ? 'inline-flex' : 'none';
+            // Title
+            const titleItem = document.getElementById('title-item');
+            const titleText = document.getElementById('title-text');
+            if (profileData.title) {
+                titleText.textContent = profileData.title;
+                titleItem.style.display = 'flex';
+            } else {
+                titleItem.style.display = 'none';
+            }
 
-            const avatarEl = document.getElementById('profile-avatar');
-            avatarEl.innerHTML = '';
+            // Location
+            const locationItem = document.getElementById('location-item');
+            const locationText = document.getElementById('location-text');
+            if (profileData.location) {
+                locationText.textContent = profileData.location;
+                locationItem.style.display = 'flex';
+            } else {
+                locationItem.style.display = 'none';
+            }
+
+            // Company
+            const companyItem = document.getElementById('company-item');
+            const companyText = document.getElementById('company-text');
+            if (profileData.company) {
+                companyText.textContent = profileData.company;
+                companyItem.style.display = 'flex';
+            } else {
+                companyItem.style.display = 'none';
+            }
+
+            // Company Website
+            const companyWebsiteItem = document.getElementById('company-website-item');
+            const companyWebsiteLink = document.getElementById('company-website-link');
+            if (profileData.companyWebsite) {
+                const websiteUrl = profileData.companyWebsite.startsWith('http') 
+                    ? profileData.companyWebsite 
+                    : `https://${profileData.companyWebsite}`;
+                companyWebsiteLink.href = websiteUrl;
+                companyWebsiteLink.textContent = profileData.companyWebsite.replace(/^https?:\/\//i, '').replace(/^www\./i, '');
+                companyWebsiteItem.style.display = 'flex';
+            } else {
+                companyWebsiteItem.style.display = 'none';
+            }
+
+            // School
+            const schoolItem = document.getElementById('school-item');
+            const schoolText = document.getElementById('school-text');
+            if (profileData.school) {
+                schoolText.textContent = profileData.school;
+                schoolItem.style.display = 'flex';
+            } else {
+                schoolItem.style.display = 'none';
+            }
+
+            // Avatar
+            const photoEl = document.getElementById('profile-photo');
+            photoEl.innerHTML = '';
             if (profileData.avatarUrl) {
                 const img = document.createElement('img');
                 img.src = profileData.avatarUrl;
                 img.alt = profileData.displayName || '头像';
-                avatarEl.appendChild(img);
+                photoEl.appendChild(img);
             } else {
-                const initial =
-                    (profileData.displayName || '用户').trim().charAt(0) || '名';
-                avatarEl.textContent = initial;
+                const initial = (profileData.displayName || '用户').trim().charAt(0) || '名';
+                photoEl.innerHTML = `<div class="profile-photo-placeholder">${initial}</div>`;
             }
 
-            const bioEl = document.getElementById('profile-bio');
-            bioEl.textContent = profileData.bio || '';
-            bioEl.style.display = profileData.bio ? 'block' : 'none';
-
-            toggleContactItem(
-                'linkedin-item',
-                'linkedin-value',
-                formatLinkedInDisplay(profileData.linkedin),
-            );
-            toggleContactItem(
-                'whatsapp-item',
-                'whatsapp-value',
-                profileData.whatsapp,
-            );
-            toggleContactItem('email-item', 'email-value', profileData.email);
-
-            const noticeEl = document.getElementById('approval-notice');
-            if (profileData.requiresApproval) {
-                noticeEl.textContent = '此联系人设置了审批模式，保存后需等待对方确认。';
-                noticeEl.style.display = 'block';
-            } else if (profileData.visibility === 'private') {
-                noticeEl.textContent = '此联系人仅对本人可见。';
-                noticeEl.style.display = 'block';
-                document.getElementById('save-button').disabled = true;
-                document.getElementById('save-button').textContent = '已设为私密';
+            // Bio
+            const bioEl = document.getElementById('bio');
+            if (profileData.bio) {
+                bioEl.textContent = profileData.bio;
+                bioEl.style.display = 'block';
             } else {
-                noticeEl.style.display = 'none';
+                bioEl.style.display = 'none';
             }
-        }
 
-        function toggleContactItem(itemId, valueId, value) {
-            const itemEl = document.getElementById(itemId);
-            const valueEl = document.getElementById(valueId);
-            if (value) {
-                valueEl.textContent = value;
-                itemEl.style.display = 'flex';
+            // Contact icons and buttons
+            if (profileData.linkedin) {
+                document.getElementById('linkedin-icon').style.display = 'flex';
+                document.getElementById('linkedin-btn').style.display = 'flex';
             } else {
-                itemEl.style.display = 'none';
+                document.getElementById('linkedin-icon').style.display = 'none';
+                document.getElementById('linkedin-btn').style.display = 'none';
             }
-        }
 
-        function formatLinkedInDisplay(value) {
-            if (!value) return '';
-            const trimmed = value.trim();
-            if (/^https?:\/\//i.test(trimmed)) {
-                return trimmed.replace(/^https?:\/\//i, '');
+            if (profileData.whatsapp) {
+                document.getElementById('whatsapp-icon').style.display = 'flex';
+                document.getElementById('whatsapp-btn').style.display = 'flex';
+            } else {
+                document.getElementById('whatsapp-icon').style.display = 'none';
+                document.getElementById('whatsapp-btn').style.display = 'none';
             }
-            if (/^www\./i.test(trimmed)) {
-                return trimmed;
+
+            if (profileData.email) {
+                document.getElementById('email-icon').style.display = 'flex';
+                document.getElementById('email-btn').style.display = 'flex';
+            } else {
+                document.getElementById('email-icon').style.display = 'none';
+                document.getElementById('email-btn').style.display = 'none';
             }
-            return `linkedin.com/in/${trimmed.replace(/^linkedin\.com\/in\//i, '')}`;
+
+            if (profileData.companyWebsite) {
+                document.getElementById('website-icon').style.display = 'flex';
+                document.getElementById('website-btn').style.display = 'flex';
+            } else {
+                document.getElementById('website-icon').style.display = 'none';
+                document.getElementById('website-btn').style.display = 'none';
+            }
+
+            // Save button
+            const saveButton = document.getElementById('save-button');
+            if (profileData.visibility === 'private') {
+                saveButton.disabled = true;
+                saveButton.textContent = '已设为私密';
+            } else {
+                saveButton.disabled = false;
+                saveButton.textContent = '💾 保存到我的联系人';
+            }
         }
 
         async function saveContact() {
@@ -504,6 +685,11 @@
                     email: profileData.email || '',
                     rawText: profileData.bio || '',
                     sourceProfileId: profileData.slug,
+                    title: profileData.title || '',
+                    company: profileData.company || '',
+                    location: profileData.location || '',
+                    school: profileData.school || '',
+                    companyWebsite: profileData.companyWebsite || '',
                 };
                 const response = await window.apiClient.createContact(payload);
                 if (response?.message) {
@@ -527,28 +713,6 @@
             }
         }
 
-        async function copyShareLink() {
-            if (!shareUrl) {
-                showToast('⚠️ 无法复制链接');
-                return;
-            }
-            try {
-                await navigator.clipboard.writeText(shareUrl);
-                showToast('✓ 链接已复制');
-            } catch (err) {
-                const temp = document.createElement('textarea');
-                temp.style.position = 'fixed';
-                temp.style.opacity = '0';
-                temp.value = shareUrl;
-                document.body.appendChild(temp);
-                temp.focus();
-                temp.select();
-                document.execCommand('copy');
-                document.body.removeChild(temp);
-                showToast('✓ 链接已复制');
-            }
-        }
-
         function openLinkedIn() {
             if (!profileData?.linkedin) {
                 showToast('⚠️ 未提供 LinkedIn 信息');
@@ -557,6 +721,9 @@
             let url = profileData.linkedin.trim();
             if (!/^https?:\/\//i.test(url)) {
                 url = `https://${url.replace(/^\/\//, '')}`;
+                if (!url.includes('linkedin.com')) {
+                    url = `https://www.linkedin.com/in/${url}`;
+                }
             }
             window.open(url, '_blank');
         }
@@ -582,6 +749,18 @@
             window.location.href = `mailto:${profileData.email}`;
         }
 
+        function openWebsite() {
+            if (!profileData?.companyWebsite) {
+                showToast('⚠️ 未提供网站信息');
+                return;
+            }
+            let url = profileData.companyWebsite.trim();
+            if (!/^https?:\/\//i.test(url)) {
+                url = `https://${url}`;
+            }
+            window.open(url, '_blank');
+        }
+
         function showToast(message) {
             const toast = document.getElementById('toast');
             toast.textContent = message;
@@ -590,7 +769,7 @@
         }
 
         function showEmptyState(message) {
-            document.getElementById('profile-card').style.display = 'none';
+            document.getElementById('profile-container').style.display = 'none';
             const emptyState = document.getElementById('empty-state');
             emptyState.textContent = message;
             emptyState.style.display = 'block';
@@ -598,5 +777,3 @@
     </script>
 </body>
 </html>
-
-
