@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>名片资料</title>
+    <title>Business Card Info</title>
     <style>
         * {
             margin: 0;
@@ -320,7 +320,7 @@
 <body>
     <div class="header-section">
         <div class="header-content">
-            <h1>👤 名片资料</h1>
+            <h1>👤 Business Card Info</h1>
         </div>
     </div>
 
@@ -425,7 +425,7 @@
         <!-- Save Button -->
         <div class="save-section">
             <button class="save-btn" id="save-button" onclick="saveContact()">
-                💾 保存到我的联系人
+                💾 Save to My Contacts
             </button>
             <button class="back-btn" onclick="goToContact()">
                 ← Back to Contacts
@@ -434,7 +434,7 @@
     </div>
 
     <div class="empty-state" id="empty-state" style="display: none;">
-        暂未找到该名片信息，可能链接已失效或被设为私密。
+        Profile not found. The link may be invalid or the profile is private.
     </div>
 
     <div class="toast" id="toast"></div>
@@ -480,9 +480,9 @@
             } catch (error) {
                 console.error('Failed to load profile', error);
                 if (error.message && error.message.includes('apiClient')) {
-                    showEmptyState('加载失败：无法连接服务器，请检查网络连接后重试。');
+                    showEmptyState('Loading failed: Unable to connect to server. Please check your network connection and try again.');
                 } else {
-                    showEmptyState('加载失败，请稍后重试。');
+                    showEmptyState('Loading failed. Please try again later.');
                 }
             }
         });
@@ -490,7 +490,7 @@
         async function init() {
             const slug = getSlugFromPath();
             if (!slug) {
-                showEmptyState('链接不正确，请确认 NFC 名片是否写入了有效地址。');
+                showEmptyState('Invalid link. Please confirm that the NFC card has a valid address.');
                 return;
             }
 
@@ -505,23 +505,23 @@
             } catch (error) {
                 console.error('getPublicProfile error:', error);
                 if (error?.message === 'Profile is private') {
-                    showEmptyState('此联系人为私密模式，无法查看。');
+                    showEmptyState('This contact is private and cannot be viewed.');
                     return;
                 }
                 if (error?.message === 'Profile not found' || error?.message === 'Source profile not found') {
-                    showEmptyState('暂未找到该名片信息。');
+                    showEmptyState('Profile not found.');
                     return;
                 }
                 // Don't show login errors for viewing public profiles
                 if (error?.message && error?.message.includes('401')) {
                     // Public profile should not require login, so this might be an API error
-                    showEmptyState('加载失败，请稍后重试。');
+                    showEmptyState('Loading failed. Please try again later.');
                     return;
                 }
                 throw error;
             }
             if (!data?.profile) {
-                showEmptyState('暂未找到该名片信息。');
+                showEmptyState('Profile not found.');
                 return;
             }
 
@@ -542,7 +542,7 @@
 
             // Name
             document.getElementById('profile-name').textContent =
-                profileData.displayName || '未命名联系人';
+                profileData.displayName || 'Unnamed Contact';
 
             // Title
             const titleItem = document.getElementById('title-item');
@@ -604,10 +604,10 @@
             if (profileData.avatarUrl) {
                 const img = document.createElement('img');
                 img.src = profileData.avatarUrl;
-                img.alt = profileData.displayName || '头像';
+                img.alt = profileData.displayName || 'Avatar';
                 photoEl.appendChild(img);
             } else {
-                const initial = (profileData.displayName || '用户').trim().charAt(0) || '名';
+                const initial = (profileData.displayName || 'User').trim().charAt(0) || 'N';
                 photoEl.innerHTML = `<div class="profile-photo-placeholder">${initial}</div>`;
             }
 
@@ -657,23 +657,23 @@
             const saveButton = document.getElementById('save-button');
             if (profileData.visibility === 'private') {
                 saveButton.disabled = true;
-                saveButton.textContent = '已设为私密';
+                saveButton.textContent = 'Set to Private';
             } else {
                 saveButton.disabled = false;
-                saveButton.textContent = '💾 保存到我的联系人';
+                saveButton.textContent = '💾 Save to My Contacts';
             }
         }
 
         async function saveContact() {
             if (!profileData) return;
             if (profileData.visibility === 'private') {
-                showToast('⚠️ 此联系人为私密，无法保存');
+                showToast('⚠️ This contact is private and cannot be saved');
                 return;
             }
 
             // Ensure apiClient is available
             if (!window.apiClient) {
-                showToast('⚠️ 系统未就绪，请刷新页面后重试');
+                showToast('⚠️ System not ready. Please refresh the page and try again');
                 return;
             }
 
@@ -691,7 +691,7 @@
             if (!isAuthenticated) {
                 const currentUrl = window.location.href;
                 const loginUrl = `${window.location.origin}/login?redirect=${encodeURIComponent(currentUrl)}`;
-                showToast('🔐 请先登录以保存联系人');
+                showToast('🔐 Please log in to save contact');
                 // Small delay to show toast message, then redirect
                 setTimeout(() => {
                     window.location.href = loginUrl;
@@ -702,7 +702,7 @@
             // User is authenticated, proceed with saving
             try {
                 const payload = {
-                    name: profileData.displayName || '未命名联系人',
+                    name: profileData.displayName || 'Unnamed Contact',
                     linkedin: profileData.linkedin || '',
                     whatsapp: profileData.whatsapp || '',
                     email: profileData.email || '',
@@ -718,7 +718,7 @@
                 if (response?.message) {
                     showToast(response.message);
                 } else {
-                    showToast('✓ 已保存到我的联系人');
+                    showToast('✓ Saved to My Contacts');
                 }
             } catch (error) {
                 console.error(error);
@@ -726,19 +726,19 @@
                 if (error.message && error.message.includes('401')) {
                     const currentUrl = window.location.href;
                     const loginUrl = `${window.location.origin}/login?redirect=${encodeURIComponent(currentUrl)}`;
-                    showToast('🔐 登录已过期，请重新登录');
+                    showToast('🔐 Session expired. Please log in again');
                     setTimeout(() => {
                         window.location.href = loginUrl;
                     }, 1500);
                 } else {
-                    showToast(`⚠️ 保存失败：${error.message || '未知错误'}`);
+                    showToast(`⚠️ Save failed: ${error.message || 'Unknown error'}`);
                 }
             }
         }
 
         function openLinkedIn() {
             if (!profileData?.linkedin) {
-                showToast('⚠️ 未提供 LinkedIn 信息');
+                showToast('⚠️ LinkedIn information not provided');
                 return;
             }
             let url = profileData.linkedin.trim();
@@ -753,12 +753,12 @@
 
         function openWhatsApp() {
             if (!profileData?.whatsapp) {
-                showToast('⚠️ 未提供 WhatsApp 号码');
+                showToast('⚠️ WhatsApp number not provided');
                 return;
             }
             const normalized = profileData.whatsapp.replace(/[^0-9]/g, '');
             if (!normalized) {
-                showToast('⚠️ 未提供有效的 WhatsApp 号码');
+                showToast('⚠️ Valid WhatsApp number not provided');
                 return;
             }
             window.open(`https://wa.me/${normalized}`, '_blank');
@@ -766,7 +766,7 @@
 
         function openEmail() {
             if (!profileData?.email) {
-                showToast('⚠️ 未提供邮箱');
+                showToast('⚠️ Email address not provided');
                 return;
             }
             window.location.href = `mailto:${profileData.email}`;
@@ -774,7 +774,7 @@
 
         function openWebsite() {
             if (!profileData?.companyWebsite) {
-                showToast('⚠️ 未提供网站信息');
+                showToast('⚠️ Website information not provided');
                 return;
             }
             let url = profileData.companyWebsite.trim();
