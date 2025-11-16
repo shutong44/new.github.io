@@ -236,6 +236,7 @@
             transition: all 0.2s ease;
             background: #1a202c;
             color: white;
+            margin-bottom: 12px;
         }
 
         .save-btn:hover {
@@ -249,6 +250,25 @@
             color: #94a3b8;
             cursor: not-allowed;
             transform: none;
+        }
+
+        .back-btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .back-btn:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         .toast {
@@ -406,6 +426,9 @@
         <div class="save-section">
             <button class="save-btn" id="save-button" onclick="saveContact()">
                 💾 保存到我的联系人
+            </button>
+            <button class="back-btn" onclick="goToContact()">
+                ← Back to Contacts
             </button>
         </div>
     </div>
