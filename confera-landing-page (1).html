@@ -209,6 +209,105 @@
             max-width: 800px;
         }
 
+        /* Manual Section */
+        .manual-section {
+            padding: 8rem 2rem;
+            background: #f5f5f5;
+            color: #000000;
+        }
+
+        .manual-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+            gap: 3rem;
+            align-items: flex-start;
+            margin-top: 3rem;
+        }
+
+        .manual-steps {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e5e7eb;
+        }
+
+        .manual-step {
+            margin-bottom: 2rem;
+        }
+
+        .manual-step:last-child {
+            margin-bottom: 0;
+        }
+
+        .manual-step-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
+        }
+
+        .manual-step-title span {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            background: #000000;
+            color: #ffffff;
+            font-size: 0.78rem;
+            margin-right: 0.75rem;
+        }
+
+        .manual-step p {
+            font-size: 0.98rem;
+            line-height: 1.8;
+            color: #374151;
+        }
+
+        .manual-highlight {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px dashed #e5e7eb;
+            font-size: 0.95rem;
+            color: #4b5563;
+        }
+
+        .manual-video {
+            background: #000000;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 24px 50px rgba(0, 0, 0, 0.25);
+        }
+
+        .manual-video h3 {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #f9fafb;
+            margin-bottom: 1rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .manual-video p {
+            font-size: 0.95rem;
+            color: #e5e7eb;
+            margin-bottom: 1rem;
+        }
+
+        .manual-video a {
+            color: #93c5fd;
+            text-decoration: underline;
+            font-size: 0.9rem;
+        }
+
+        .manual-video iframe {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            border: none;
+            border-radius: 12px;
+            margin-top: 1rem;
+        }
+
         /* Features Section */
         .features-section {
             padding: 8rem 2rem;
@@ -353,6 +452,10 @@
             .standout-grid {
                 grid-template-columns: 1fr;
             }
+
+            .manual-layout {
+                grid-template-columns: 1fr;
+            }
         }
 
         @media (min-width: 769px) and (max-width: 1024px) {
@@ -389,12 +492,13 @@
 <body>
     <!-- Navigation Bar -->
     <nav class="navbar">
-        <a href="#" class="nav-item active">INTRO</a>
-        <a href="/contact" class="nav-item">TRY DEMO</a>
+        <a href="#top" class="nav-item active" id="nav-intro">INTRO</a>
+        <a href="/contact" class="nav-item" id="nav-demo">TRY DEMO</a>
+        <a href="#manual" class="nav-item" id="nav-manual">MANUAL</a>
     </nav>
 
     <!-- Hero Section -->
-    <section class="hero">
+    <section class="hero" id="top">
         <div class="hero-container">
             <!-- Video Section (Left) -->
             <div class="hero-video">
@@ -422,6 +526,59 @@
             </div>
         </div>
         <div class="scroll-indicator">SCROLL</div>
+    </section>
+
+    <!-- Manual Section -->
+    <section class="manual-section" id="manual">
+        <div class="section-container">
+            <h2 class="section-title">How Confera Works</h2>
+            <div class="manual-layout">
+                <div class="manual-steps">
+                    <div class="manual-step">
+                        <div class="manual-step-title"><span>STEP 1</span>Sign In & Set Up Your Profile</div>
+                        <p>Log in with your Google account and fill in your professional details — including LinkedIn, company information, and contact data.</p>
+                    </div>
+
+                    <div class="manual-step">
+                        <div class="manual-step-title"><span>STEP 2</span>Share Your Digital Profile Instantly</div>
+                        <p>Use a link, NFC tap, or QR code to share your profile. Others can save your information to their contact list with just one click.</p>
+                    </div>
+
+                    <div class="manual-step">
+                        <div class="manual-step-title"><span>STEP 3</span>Upload Business Cards</div>
+                        <p>Upload any physical business card. Confera automatically extracts and structures all key information using the GenMIN model — no manual entry needed.</p>
+                    </div>
+
+                    <div class="manual-step">
+                        <div class="manual-step-title"><span>STEP 4</span>Manage Your Contact List</div>
+                        <p>Browse and edit your contacts, attach files, and view company details. All data supports import and export for easy syncing.</p>
+                    </div>
+
+                    <div class="manual-step">
+                        <div class="manual-step-title"><span>STEP 5</span>Prepare for Conferences</div>
+                        <p>Select contacts you plan to meet and generate a personalized conference checklist.</p>
+                    </div>
+
+                    <div class="manual-step">
+                        <div class="manual-step-title"><span>STEP 6</span>Take Meeting Notes</div>
+                        <p>During the event, record notes on each conversation. Your notes are automatically linked to the related contact.</p>
+                    </div>
+
+                    <div class="manual-highlight">
+                        Confera turns every interaction — from the first tap to the final follow-up — into a structured, searchable, and actionable relationship.
+                    </div>
+                </div>
+
+                <div class="manual-video">
+                    <h3>Product Walkthrough</h3>
+                    <p>Watch a quick overview of how Confera streamlines business card capture, contact management, and conference preparation.</p>
+                    <a href="https://www.youtube.com/watch?v=hje63fPiEII" target="_blank" rel="noopener noreferrer">
+                        Open on YouTube →
+                    </a>
+                    <iframe src="https://www.youtube.com/embed/hje63fPiEII" allowfullscreen></iframe>
+                </div>
+            </div>
+        </div>
     </section>
 
     <!-- Why Confera Section -->
@@ -538,5 +695,38 @@
         <p>Confera empowers you to focus on meaningful relationships, not manual tasks. It transforms every interaction, business card, and handshake into a structured, secure, and actionable connection.</p>
         <a href="#" class="cta-button">GET STARTED</a>
     </section>
+
+    <script>
+        // Simple nav active state handling for in-page tabs
+        const navIntro = document.getElementById('nav-intro');
+        const navManual = document.getElementById('nav-manual');
+
+        function setActiveNav(target) {
+            [navIntro, navManual].forEach(el => {
+                if (!el) return;
+                if (el === target) {
+                    el.classList.add('active');
+                } else {
+                    el.classList.remove('active');
+                }
+            });
+        }
+
+        if (navIntro) {
+            navIntro.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.getElementById('top').scrollIntoView({ behavior: 'smooth' });
+                setActiveNav(navIntro);
+            });
+        }
+
+        if (navManual) {
+            navManual.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.getElementById('manual').scrollIntoView({ behavior: 'smooth' });
+                setActiveNav(navManual);
+            });
+        }
+    </script>
 </body>
 </html>
